@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "config.h"
+#include "list.h"
 
 typedef          char   i8;
 typedef          short  i16;
@@ -160,59 +161,9 @@ void get_folder_path(char *path, char *buf)
 
 
 typedef struct {
-    char **args;
-    char  *val;
-} macro_val_t;
-
-typedef struct {
-    macro_val_t    *val;
-    list_mv_pair_t *next;
-} list_mv_pair_t;
-
-int list_mv_add(list_mv_pair_t *start, list_mv_pair_t *new)
-{
-    if (start == (list_mv_pair_t*)0) {
-        return 1;
-    }
-
-    list_mv_pair_t *cur = start;
-    
-    while (cur->next != (list_mv_pair_t*)0) {
-        cur = cur->next;
-    }
-    cur->next = new;
-    
-    return 0;
-}
-
-size_t list_mv_size(list_mv_pair_t *start)
-{
-    if (start == (list_mv_pair_t*)0) {
-        return 1;
-    }
-
-    list_mv_pair_t *cur = start;
-    size_t size = 1;
-    
-    while (cur->next != (list_mv_pair_t*)0) {
-        cur = cur->next;
-        size++;
-    }
-
-    return size;
-}
-
-list_mv_pair_t *list_mv_get(list_mv_pair_t *start, size_t index)
-{
-    if (start == (list_mv_pair_t*)0 || index >= list_mv_size(start)) {
-        return (list_mv_pair_t*)0;
-    }
-
-    list_mv_pair_t *cur = start;
-    size_t i = 0;
-    while (i < index) {
-        
-    }
-}
+    char name[MAX_IDENT_SIZE];
+    char args[MAX_MACRO_ARGS][MAX_IDENT_SIZE];
+    char val[MAX_MACRO_VAL];
+} macro_info_t;
 
 #endif

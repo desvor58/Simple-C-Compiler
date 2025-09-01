@@ -1,6 +1,8 @@
 #include "args.h"
 #include "preproc.h"
 
+#include "hashmap.h"
+
 char   *code;
 args_t  args;
 error_t errs[ERROR_STK_SIZE];

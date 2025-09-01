@@ -2,24 +2,14 @@
 #define PREPROC_H
 
 #include "types.h"
+#include "hashmap.h"
 
-void __preproc_skip_notoks(char *text, size_t *pos)
-{
-    while (!isalpha(text[*pos]) && text[*pos] != '_' && text[*pos] != '#') {
-        (*pos)++;
-    }
-}
+void __preproc_skip_notoks(char *text, size_t *pos);
+void __preproc_gettok(char *text, size_t *pos, char *buf);
 
-void __preproc_gettok(char *text, size_t *pos, char *buf)
-{
-    int i = 0;
-    while (isalpha(text[*pos]) || isdigit(text[*pos]) || text[*pos] == '_' || text[*pos] == '#') {
-        buf[i] = text[*pos];
-        i++;
-        (*pos)++;
-    }
-    buf[i] = '\0';
-}
+genhashmap(macro_info_t)
+
+hashmap_macro_info_t_t *macros;
 
 // errs size = ERROR_STK_SIZE
 void preproc(args_t args, error_t *errs, u32 *errs_top, char *text, char *file_name)
@@ -28,8 +18,10 @@ void preproc(args_t args, error_t *errs, u32 *errs_top, char *text, char *file_n
     size_t line = 1;
     size_t chpos = 0;
     char  *file = file_name;
-
+    
     char *buf = malloc(MAX_IDENT_SIZE);
+
+    macros = hashmap_macro_info_t_create();
 
     for (pos = 0; pos < strlen(text); pos++) {
         if (text[pos] == '\n') {
@@ -43,7 +35,7 @@ void preproc(args_t args, error_t *errs, u32 *errs_top, char *text, char *file_n
             while (text[pos] != '\n' && text[pos] != '\0') {
                 pos++;
             }
-            buf_replace(text, 1024 * 10, start_pos, pos, "");
+            buf_replace(text, MAX_CODE_SIZE, start_pos, pos, "");
             pos = start_pos;
         } else
         if (text[pos] == '#') {
@@ -88,8 +80,32 @@ void preproc(args_t args, error_t *errs, u32 *errs_top, char *text, char *file_n
                             put_error(gen_error("too large included file (translation unit > 1024 * 10)", file, line, chpos, ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
                         }
 
+                        pos = start_pos;
+
                         free(included_code);
                     }
+                }
+            } else
+            if (!strcmp(buf, "#define")) {
+                __preproc_skip_notoks(text, &pos);
+                __preproc_gettok(text, &pos, buf);
+                macro_info_t *macro = (macro_info_t*)malloc(sizeof(macro_info_t));
+                strcpy(macro->name, buf);
+                while (text[pos++] == ' ') {}
+
+                pos--;
+                size_t i = 0;
+                while (text[pos] != '\n' && text[pos] != '\0') {
+                    buf[i++] = text[pos++];
+                }
+                buf[i] = '\0';
+                strcpy(macro->val, buf);
+
+                hashmap_macro_info_t_set(macros, macro->name, macro);
+
+                int err = buf_replace(text, MAX_CODE_SIZE, start_pos, pos + 1, "");
+                if (err) {
+                    put_error(gen_error("too large included file (translation unit > 1024 * 10)", file, line, chpos, ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
                 }
             } else {
                 errs[(*errs_top)++] = gen_error("Unknow preprocessor derective",
@@ -101,7 +117,26 @@ void preproc(args_t args, error_t *errs, u32 *errs_top, char *text, char *file_n
         }
     }
 
+    hashmap_macro_info_t_free(macros);
     free(buf);
+}
+
+void __preproc_skip_notoks(char *text, size_t *pos)
+{
+    while (!isalpha(text[*pos]) && text[*pos] != '_' && text[*pos] != '#') {
+        (*pos)++;
+    }
+}
+
+void __preproc_gettok(char *text, size_t *pos, char *buf)
+{
+    int i = 0;
+    while (isalpha(text[*pos]) || isdigit(text[*pos]) || text[*pos] == '_' || text[*pos] == '#') {
+        buf[i] = text[*pos];
+        i++;
+        (*pos)++;
+    }
+    buf[i] = '\0';
 }
 
 #endif
