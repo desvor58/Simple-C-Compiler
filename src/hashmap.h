@@ -63,6 +63,23 @@ Ty *hashmap_##Ty##_get(hashmap_##Ty##_t *map, char *key)  \
     }  \
     return 0;  \
 }  \
+int hashmap_##Ty##_delete(hashmap_##Ty##_t *map, char *key)  \
+{  \
+    if (map == 0 || strlen(key) == 0) {  \
+        return 1;  \
+    }  \
+    u32 buckit = crc32(key, strlen(key)) % HASHMAP_BUCKIT_NUM;  \
+    if (list_hashmap_##Ty##_container_t_size(map->arr[buckit]) == 0) {  \
+        return 1;  \
+    }  \
+    for (int i = 0; i < list_hashmap_##Ty##_container_t_size(map->arr[buckit]); i++) {  \
+        if (!strcmp(list_hashmap_##Ty##_container_t_get(map->arr[buckit], i)->key, key)) {  \
+            map->arr[buckit] = list_hashmap_##Ty##_container_t_delete(map->arr[buckit], i);  \
+            return 0;  \
+        }  \
+    }  \
+    return 1;  \
+}  \
 void hashmap_##Ty##_free(hashmap_##Ty##_t *map)  \
 {  \
     for (size_t i = 0; i < HASHMAP_BUCKIT_NUM; i++) {  \

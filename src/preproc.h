@@ -73,11 +73,12 @@ void preproc(args_t args, error_t *errs, u32 *errs_top, char *text, char *file_n
                         included_code[i] = '\0';
 
                         preproc(args, errs, errs_top, included_code, buf);
-                        //printf_s("%s\n", included_code);
+                        // printf_s("%s\n\tEND\n", included_code);
+                        // printf_s("%s\n", text);
 
                         int err = buf_replace(text, MAX_CODE_SIZE, start_pos, pos + 1, included_code);
                         if (err) {
-                            put_error(gen_error("too large included file (translation unit > 1024 * 10)", file, line, chpos, ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
+                            put_error(gen_error("too large included file", file, line, chpos, ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
                         }
 
                         pos = start_pos;
@@ -105,14 +106,41 @@ void preproc(args_t args, error_t *errs, u32 *errs_top, char *text, char *file_n
 
                 int err = buf_replace(text, MAX_CODE_SIZE, start_pos, pos + 1, "");
                 if (err) {
-                    put_error(gen_error("too large included file (translation unit > 1024 * 10)", file, line, chpos, ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
+                    put_error(gen_error("too large translation unit", file, line, chpos, ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
                 }
+                pos = start_pos;
+            } else
+            if (!strcmp(buf, "#undef")) {
+                __preproc_skip_notoks(text, &pos);
+                __preproc_gettok(text, &pos, buf);
+                int err = hashmap_macro_info_t_delete(macros, buf);
+                if (err) {
+                    errs[(*errs_top)++] = gen_error("unknow identifire", file, line, chpos, ERROR_CODE_UNKNOW_IDENTIFIRE);
+                }
+                err = buf_replace(text, MAX_CODE_SIZE, start_pos, pos + 1, "");
+                if (err) {
+                    put_error(gen_error("too large translation unit", file, line, chpos, ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
+                }
+                pos = start_pos;
             } else {
                 errs[(*errs_top)++] = gen_error("Unknow preprocessor derective",
                                                 file,
                                                 line,
                                                 chpos,
                                                 ERROR_CODE_UNKNOW_PREPROC_DERECTIVE);
+            }
+        }
+        if (isalpha(text[pos]) || text[pos] == '_') {
+            size_t start_pos = pos;
+            __preproc_gettok(text, &pos, buf);
+            
+            macro_info_t *macro = hashmap_macro_info_t_get(macros, buf);
+            if (macro) {
+                int err = buf_replace(text, MAX_CODE_SIZE, start_pos, pos, macro->val);
+                if (err) {
+                    put_error(gen_error("too large translation unit", file, line, chpos, ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
+                }
+                pos = start_pos;
             }
         }
     }

@@ -1,3 +1,13 @@
+/**********************************************************
+ *                 Simple C Compiler
+ *                     by Desvor
+ *     (thanks halloweeks for crc32 hash-fuction)
+ *
+ * This compiler created for the OS x16PRox (by PRoxDev),
+ * for creating your own lightweight compilers on this base
+ *           and for learn who C compilers works
+ **********************************************************/
+
 #include "args.h"
 #include "preproc.h"
 
@@ -7,6 +17,8 @@ char   *code;
 args_t  args;
 error_t errs[ERROR_STK_SIZE];
 u32     errs_top = 0;
+
+genlist(int)
 
 int main(int argc, char **argv)
 {
@@ -30,6 +42,15 @@ int main(int argc, char **argv)
     for (; c != EOF; i++) {
         c = getc(infile);
         code[i] = c;
+        if (c == '/') {
+            c = getc(infile);
+            if (c == '/') {
+                while (c != '\n' && c != EOF) {
+                    c = getc(infile);
+                }
+                code[i--] = '\n';
+            }
+        }
     }
     code[i] = '\0';
 

@@ -75,6 +75,28 @@ Ty *list_##Ty##_get(list_##Ty##_pair_t *start, size_t index)  \
     }  \
     return cur->val;  \
 }  \
+list_##Ty##_pair_t *list_##Ty##_delete(list_##Ty##_pair_t *start, size_t index)  \
+{  \
+    if (start == (list_##Ty##_pair_t*)0 || index >= list_##Ty##_size(start)) {  \
+        return 0;  \
+    }  \
+    list_##Ty##_pair_t *acc;  \
+    if (index == 0) {  \
+        acc = start->next;  \
+        free(start);  \
+        return acc;  \
+    }  \
+    list_##Ty##_pair_t *cur = start;  \
+    size_t i = 0;  \
+    while (i < index - 1) {  \
+        cur = cur->next;  \
+        i++;  \
+    }  \
+    acc = cur->next->next;  \
+    free(cur->next);  \
+    cur->next = acc;  \
+    return start;  \
+}  \
 int list_##Ty##_free(list_##Ty##_pair_t *start)  \
 {  \
     if (start == (list_##Ty##_pair_t*)0) {  \

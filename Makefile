@@ -1,7 +1,7 @@
 CC=gcc
 CCFLAGS=-Iinclude
 SRC=src/*.c
-OUT=bin/prcc.exe
+OUT=bin/scc.exe
 
 all:
 	$(CC) $(SRC) -o $(OUT) $(CCFLAGS)
