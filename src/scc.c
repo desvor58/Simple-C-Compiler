@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     }
     code[i] = '\0';
 
-    preproc(args, errs, &errs_top, code, args.infile_name);
+    preprocess(args, errs, &errs_top, code, args.infile_name);
     if (args.flags & ARGS_FLG_PREPROC_STOP) {
         printf_s("%s\n", code);
     }

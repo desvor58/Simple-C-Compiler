@@ -145,19 +145,17 @@ void put_pos_str(char *str, size_t pos)
 // ERROR
 void get_folder_path(char *path, char *buf)
 {
-    size_t i = strlen(path);
-    size_t j = 0;
-
-    while (path[i] != '/' && path[i] != '\\') {
-        if (i == 0) {
-            strcpy(buf, ".");
-            break;
-        }
-        buf[j] = path[i];
-        i--;
-        j++;
+    long long top = strlen(buf) + 1;
+    while (path[top] != '/' && top >= 0) {
+        top--;
     }
-    strcat(buf, "/");
+    buf[0] = '.';
+    buf[1] = '/';
+    size_t i = 2;
+    while (i - 2 <= top) {
+        buf[i++] = path[i - 2];
+    }
+    buf[i] = '\0';
 }
 
 

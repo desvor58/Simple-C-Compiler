@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "xutility": "cpp",
-        "xiosbase": "c"
+        "xiosbase": "c",
+        "test_preproc.h": "c"
     }
 }

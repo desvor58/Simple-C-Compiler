@@ -1,0 +1,4 @@
+// afdnb
+ABC foo()
+{
+}
