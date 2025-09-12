@@ -32,8 +32,12 @@ void preprocess(args_t args, error_t *errs, u32 *errs_top, char *_text, char *fi
     preproc->file  = file_name;
     preproc->line  = 1;
     preproc->chpos = 0;
+    int macros_be_created = 0;
 
-    macros = hashmap_macro_info_t_create();
+    if (macros == 0) {
+        macros = hashmap_macro_info_t_create();
+        macros_be_created = 1;
+    }
 
     for (preproc->pos = 0; preproc->pos < strlen(preproc->text); preproc->pos++) {
         if (preproc->text[preproc->pos] == '\n') {
@@ -158,8 +162,9 @@ void preprocess(args_t args, error_t *errs, u32 *errs_top, char *_text, char *fi
                                                 preproc->line,
                                                 preproc->chpos,
                                                 ERROR_CODE_UNKNOW_PREPROC_DERECTIVE);
+                preproc->pos--;
             }
-        }
+        } else
         if (isalpha(preproc->text[preproc->pos]) || preproc->text[preproc->pos] == '_') {
             size_t start_pos = preproc->pos;
             preproc_gettok(preproc);
@@ -179,7 +184,9 @@ void preprocess(args_t args, error_t *errs, u32 *errs_top, char *_text, char *fi
         }
     }
 
-    hashmap_macro_info_t_free(macros);
+    if (macros_be_created) {
+        hashmap_macro_info_t_free(macros);
+    }
     free(preproc->buf);
 }
 

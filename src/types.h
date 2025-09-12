@@ -142,7 +142,6 @@ void put_pos_str(char *str, size_t pos)
     putchar('\n');
 }
 
-// ERROR
 void get_folder_path(char *path, char *buf)
 {
     long long top = strlen(buf) + 1;
@@ -156,6 +155,31 @@ void get_folder_path(char *path, char *buf)
         buf[i++] = path[i - 2];
     }
     buf[i] = '\0';
+}
+
+void get_file_text(char *file_name, char *buf)
+{
+    FILE *file;
+    fopen_s(&file, file_name, "r");
+
+    char c = ' ';
+    int i = 0;
+    for (; c != EOF; i++) {
+        c = getc(file);
+        buf[i] = c;
+        if (c == '/') {
+            c = getc(file);
+            if (c == '/') {
+                while (c != '\n' && c != EOF) {
+                    c = getc(file);
+                }
+                buf[i] = '\n';
+            }
+        }
+    }
+    buf[i] = '\0';
+
+    fclose(file);
 }
 
 

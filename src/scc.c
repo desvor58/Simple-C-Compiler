@@ -20,6 +20,16 @@ u32     errs_top = 0;
 
 genlist(int)
 
+void check_errs()
+{
+    for (int i = 0; i < errs_top; i++) {
+        put_error(errs[i], 0);
+    }
+    if (errs_top) {
+        exit(1);
+    }
+}
+
 int main(int argc, char **argv)
 {
     code = (char*)malloc(MAX_CODE_SIZE);
@@ -37,24 +47,10 @@ int main(int argc, char **argv)
     if (!infile) {
         put_error(gen_error("input file not be opened", "", 0, 0, 1488), 1);
     }
-    char c = ' ';
-    int i = 0;
-    for (; c != EOF; i++) {
-        c = getc(infile);
-        code[i] = c;
-        if (c == '/') {
-            c = getc(infile);
-            if (c == '/') {
-                while (c != '\n' && c != EOF) {
-                    c = getc(infile);
-                }
-                code[i--] = '\n';
-            }
-        }
-    }
-    code[i] = '\0';
+    get_file_text(args.infile_name, code);
 
     preprocess(args, errs, &errs_top, code, args.infile_name);
+    check_errs();
     if (args.flags & ARGS_FLG_PREPROC_STOP) {
         printf_s("%s\n", code);
     }
