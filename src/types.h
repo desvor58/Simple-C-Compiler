@@ -52,6 +52,11 @@ typedef struct {
     int         exit_code;
 } error_t;
 
+typedef struct {
+    error_t stk[ERROR_STK_SIZE];
+    size_t  top;
+} error_stk_t;
+
 // generate a error
 error_t gen_error(const char *msg, char *file, size_t line, size_t chpos, int exit_code)
 {

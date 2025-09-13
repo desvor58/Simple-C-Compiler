@@ -15,23 +15,23 @@
 
 char   *code;
 args_t  args;
-error_t errs[ERROR_STK_SIZE];
-u32     errs_top = 0;
-
-genlist(int)
+static error_stk_t *err_stk;
 
 void check_errs()
 {
-    for (int i = 0; i < errs_top; i++) {
-        put_error(errs[i], 0);
+    for (int i = 0; i < err_stk->top; i++) {
+        put_error(err_stk->stk[i], 0);
     }
-    if (errs_top) {
+    if (err_stk->top) {
         exit(1);
     }
 }
 
 int main(int argc, char **argv)
 {
+    err_stk = (error_stk_t*)malloc(sizeof(error_stk_t));
+    err_stk->top = 0;
+
     code = (char*)malloc(MAX_CODE_SIZE);
 
     error_t err = args_parse(&args, argc, argv);
@@ -49,11 +49,13 @@ int main(int argc, char **argv)
     }
     get_file_text(args.infile_name, code);
 
-    preprocess(args, errs, &errs_top, code, args.infile_name);
+    preprocess(args, code, args.infile_name);
     check_errs();
     if (args.flags & ARGS_FLG_PREPROC_STOP) {
         printf_s("%s\n", code);
     }
 
+    free(err_stk);
+    free(code);
     return 0;
 }

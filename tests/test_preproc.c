@@ -1,5 +1,3 @@
-#define ABC int
-
 #include "test_preproc.h"
 
 // its comment
