@@ -90,7 +90,7 @@ int buf_insert(char *buf, size_t buf_size, size_t index, char *insert)
         return 1;
     }
 
-    char *save_buf = (char*)malloc(buf_size);
+    char *save_buf = (char*)malloc(buflen - index);
 
     size_t i;
     for (i = index; i < buflen; i++) {
