@@ -46,7 +46,7 @@ enum {
 
 typedef struct {
     const char *msg;
-    char       *file;
+    char        file[MAX_IDENT_SIZE];
     size_t      line;
     size_t      chpos;
     int         exit_code;
@@ -60,7 +60,13 @@ typedef struct {
 // generate a error
 error_t gen_error(const char *msg, char *file, size_t line, size_t chpos, int exit_code)
 {
-    return (error_t){msg, file, line, chpos, exit_code};
+    error_t err;
+    err.msg = msg;
+    strcpy(err.file, file);
+    err.line = line;
+    err.chpos = chpos;
+    err.exit_code = exit_code;
+    return err;
 }
 
 #define errOK gen_error("", "", 0, 0, ERROR_CODE_OK)
@@ -162,11 +168,8 @@ void get_folder_path(char *path, char *buf)
     buf[i] = '\0';
 }
 
-void get_file_text(char *file_name, char *buf)
+void get_file_text(FILE *file, char *buf)
 {
-    FILE *file;
-    fopen_s(&file, file_name, "r");
-
     char c = ' ';
     int i = 0;
     for (; c != EOF; i++) {
@@ -183,8 +186,6 @@ void get_file_text(char *file_name, char *buf)
         }
     }
     buf[i] = '\0';
-
-    fclose(file);
 }
 
 

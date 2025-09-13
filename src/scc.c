@@ -47,7 +47,8 @@ int main(int argc, char **argv)
     if (!infile) {
         put_error(gen_error("input file not be opened", "", 0, 0, 1488), 1);
     }
-    get_file_text(args.infile_name, code);
+    get_file_text(infile, code);
+    fclose(infile);
 
     preprocess(args, code, args.infile_name);
     check_errs();

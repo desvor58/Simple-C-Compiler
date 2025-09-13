@@ -84,13 +84,8 @@ void preprocess(args_t args, char *_text, char *file_name)
                                                                  ERROR_CODE_NO_SUCH_INCLUDED_FILE);
                     } else {
                         char *included_code = (char*)malloc(MAX_CODE_SIZE);
-                        char c = ' ';
-                        int i = 0;
-                        for (; c != EOF; i++) {
-                            c = getc(included_file);
-                            included_code[i] = c;
-                        }
-                        included_code[i] = '\0';
+                        get_file_text(included_file, included_code);
+                        fclose(included_file);
 
                         preprocess(args, included_code, preproc->buf);
                         // printf_s("%s\n\tEND\n", included_code);
