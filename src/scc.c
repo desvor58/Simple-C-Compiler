@@ -50,7 +50,11 @@ int main(int argc, char **argv)
     get_file_text(infile, code);
     fclose(infile);
 
-    preprocess(args, code, args.infile_name);
+    preproc_info_t *preproc = malloc(sizeof(preproc_info_t));
+    preproc_create(preproc, args, code, args.infile_name);
+    preprocess(preproc);
+    preproc_delete(preproc);
+    free(preproc);
     check_errs();
     if (args.flags & ARGS_FLG_PREPROC_STOP) {
         printf_s("%s\n", code);

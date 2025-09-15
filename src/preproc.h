@@ -14,6 +14,22 @@ typedef struct preproc_info_t {
     size_t chpos;
 } preproc_info_t;
 
+void preproc_create(preproc_info_t *preproc, args_t args, char *text, char *file)
+{
+    preproc->args  = args;
+    preproc->text  = text;
+    preproc->buf   = malloc(sizeof(char)*MAX_MACRO_VAL);
+    preproc->pos   = 0;
+    preproc->file  = file;
+    preproc->line  = 1;
+    preproc->chpos = 0;
+}
+
+void preproc_delete(preproc_info_t *preproc)
+{
+    free(preproc->buf);
+}
+
 void preproc_skip_notoks(preproc_info_t *preproc);
 void preproc_gettok(preproc_info_t *preproc);
 
@@ -24,16 +40,9 @@ hashmap_macro_info_t_t *macros = 0;
 static error_stk_t *err_stk;
 
 // errs size = ERROR_STK_SIZE
-void preprocess(args_t args, char *_text, char *file_name)
+void preprocess(preproc_info_t *preproc)
 {
-    preproc_info_t *preproc = (preproc_info_t*)malloc(sizeof(preproc_info_t));
-    preproc->args  = args;
-    preproc->text  = _text;
-    preproc->buf   = malloc(sizeof(char)*MAX_IDENT_SIZE);
-    preproc->pos   = 0;
-    preproc->file  = file_name;
-    preproc->line  = 1;
-    preproc->chpos = 0;
+    printf_s("start\n");
     int macros_be_created = 0;
 
     if (macros == 0) {
@@ -87,9 +96,15 @@ void preprocess(args_t args, char *_text, char *file_name)
                         get_file_text(included_file, included_code);
                         fclose(included_file);
 
-                        preprocess(args, included_code, preproc->buf);
+                        preproc_info_t *_preproc = malloc(sizeof(preproc_info_t));
+                        preproc_create(_preproc, preproc->args, included_code, preproc->file);
+                        preprocess(_preproc);
+                        puts("1");
+                        preproc_delete(_preproc);
+                        puts("2");
+                        free(_preproc);
                         // printf_s("%s\n\tEND\n", included_code);
-                        // printf_s("%s\n", text);
+                        // printf_s("%s\n", preproc->text);
 
                         int err = buf_replace(preproc->text, MAX_CODE_SIZE, start_pos, preproc->pos + 1, included_code);
                         if (err) {
@@ -184,7 +199,7 @@ void preprocess(args_t args, char *_text, char *file_name)
     if (macros_be_created) {
         hashmap_macro_info_t_free(macros);
     }
-    free(preproc->buf);
+    puts("end");
 }
 
 void preproc_skip_notoks(preproc_info_t *preproc)
