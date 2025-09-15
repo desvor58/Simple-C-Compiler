@@ -57,7 +57,6 @@ typedef struct {
     size_t  top;
 } error_stk_t;
 
-// generate a error
 error_t gen_error(const char *msg, char *file, size_t line, size_t chpos, int exit_code)
 {
     error_t err;
@@ -77,6 +76,38 @@ void put_error(error_t err, int fatal)
     if (fatal) {
         exit(err.exit_code);
     }
+}
+
+typedef enum {
+    TT_TYPE_NAME,
+    TT_IDENT,
+    TT_BOP,
+    TT_UOP,
+    TT_LPARENT,
+    TT_RPARENT,
+    TT_LBRACKET,
+    TT_RBRACKET,
+    TT_INT_LIT,
+    TT_FLOAT_LIT,
+    TT_STR_LIT,
+    TT_SEMICOLON,
+} token_type_t;
+
+typedef struct {
+    token_type_t type;
+    char         val[MAX_IDENT_SIZE];
+    size_t       line_ref;
+    size_t       chpos_ref;
+} token_t;
+
+token_t gen_token(token_type_t type, char *val, size_t line_ref, size_t chpos_ref)
+{
+    token_t tok;
+    tok.type = type;
+    strcpy(tok.val, val);
+    tok.line_ref = line_ref;
+    tok.chpos_ref = chpos_ref;
+    return tok;
 }
 
 

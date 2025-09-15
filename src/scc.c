@@ -10,6 +10,7 @@
 
 #include "args.h"
 #include "preproc.h"
+#include "lexer.h"
 
 #include "hashmap.h"
 
@@ -55,10 +56,23 @@ int main(int argc, char **argv)
     preprocess(preproc);
     preproc_delete(preproc);
     free(preproc);
-    check_errs();
     if (args.flags & ARGS_FLG_PREPROC_STOP) {
         printf_s("%s\n", code);
     }
+
+    lexer_info_t *lexer = malloc(sizeof(lexer_info_t));
+    token_t *toks = malloc(sizeof(token_t)*TOKS_SIZE);
+    lexer_create(lexer, args, code, toks, args.infile_name);
+    lex_text(lexer);
+
+    for (size_t i = 0; i < lexer->toks_top; i++) {
+        printf_s("%u %s\n", lexer->toks[i].type, lexer->toks[i].val);
+    }
+
+    lexer_delete(lexer);
+    free(lexer);
+
+    check_errs();
 
     free(err_stk);
     free(code);

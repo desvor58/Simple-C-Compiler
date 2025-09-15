@@ -4,7 +4,100 @@
 #include "types.h"
 
 typedef struct {
-    
+    args_t   args;
+    char    *text;
+    token_t *toks;
+    size_t   toks_top;
+    char    *buf;
+    size_t   pos;
+    char    *file;
+    size_t   line;
+    size_t   chpos;
 } lexer_info_t;
+
+void lexer_create(lexer_info_t *lexer, args_t args, char *text, token_t *toks, char *file)
+{
+    lexer->args     = args;
+    lexer->text     = text;
+    lexer->toks     = toks;
+    lexer->toks_top = 0;
+    lexer->buf      = (char*)malloc(sizeof(char) * MAX_IDENT_SIZE);
+    lexer->pos      = 0;
+    lexer->file     = file;
+    lexer->line     = 1;
+    lexer->chpos    = 0;
+}
+
+void lexer_delete(lexer_info_t *lexer)
+{
+    free(lexer->buf);
+}
+
+void lexer_alpha_parse(lexer_info_t *lexer);
+void lexer_buf_analis(lexer_info_t *lexer);
+
+#define push_tok(type, val) lexer->toks[lexer->toks_top++] = gen_token(type, val, lexer->line, lexer->chpos)
+
+void lex_text(lexer_info_t *lexer)
+{
+    for (lexer->pos = 0; lexer->pos < strlen(lexer->text); lexer->pos++) {
+        if (lexer->text[lexer->pos] == '(') {
+            push_tok(TT_LPARENT, "(");
+        } else
+        if (lexer->text[lexer->pos] == ')') {
+            push_tok(TT_RPARENT, ")");
+        } else
+        if (lexer->text[lexer->pos] == '{') {
+            push_tok(TT_LBRACKET, "{");
+        } else
+        if (lexer->text[lexer->pos] == '}') {
+            push_tok(TT_RBRACKET, "}");
+        } else
+        if (lexer->text[lexer->pos] == ';') {
+            push_tok(TT_SEMICOLON, ";");
+        } else
+        if (lexer->text[lexer->pos] == '='
+         || lexer->text[lexer->pos] == '+'
+         || lexer->text[lexer->pos] == '-'
+         || lexer->text[lexer->pos] == '*'
+         || lexer->text[lexer->pos] == '/') {
+            lexer->buf[0] = lexer->text[lexer->pos];
+            lexer->buf[1] = '\0';
+            push_tok(TT_BOP, lexer->buf);
+        } else
+        if (isalpha(lexer->text[lexer->pos]) || lexer->text[lexer->pos] == '_') {
+            lexer_alpha_parse(lexer);
+            lexer->pos--;
+        }
+    }
+}
+
+void lexer_alpha_parse(lexer_info_t *lexer)
+{
+    size_t i = 0;
+    while (isalpha(lexer->text[lexer->pos])
+        || isdigit(lexer->text[lexer->pos])
+        || lexer->text[lexer->pos] == '_'
+    ) {
+        lexer->buf[i++] = lexer->text[lexer->pos++];
+    }
+    lexer->buf[i] = '\0';
+    lexer_buf_analis(lexer);
+}
+
+void lexer_buf_analis(lexer_info_t *lexer)
+{
+    if (!strcmp(lexer->buf, "char")
+     || !strcmp(lexer->buf, "short")
+     || !strcmp(lexer->buf, "int")
+     || !strcmp(lexer->buf, "long")
+     || !strcmp(lexer->buf, "signed")
+     || !strcmp(lexer->buf, "unsigned")
+    ) {
+        push_tok(TT_TYPE_NAME, lexer->buf);
+    } else {
+        push_tok(TT_IDENT, lexer->buf);
+    }
+}
 
 #endif
