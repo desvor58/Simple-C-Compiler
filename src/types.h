@@ -81,8 +81,11 @@ void put_error(error_t err, int fatal)
 typedef enum {
     TT_TYPE_NAME,
     TT_IDENT,
-    TT_BOP,
-    TT_UOP,
+    TT_EQ,
+    TT_PLUS,
+    TT_MINUS,
+    TT_STAR,
+    TT_SLASH,
     TT_LPARENT,
     TT_RPARENT,
     TT_LBRACKET,

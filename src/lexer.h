@@ -34,6 +34,7 @@ void lexer_delete(lexer_info_t *lexer)
 }
 
 void lexer_alpha_parse(lexer_info_t *lexer);
+void lexer_digit_parse(lexer_info_t *lexer);
 void lexer_buf_analis(lexer_info_t *lexer);
 
 #define push_tok(type, val) lexer->toks[lexer->toks_top++] = gen_token(type, val, lexer->line, lexer->chpos)
@@ -56,17 +57,27 @@ void lex_text(lexer_info_t *lexer)
         if (lexer->text[lexer->pos] == ';') {
             push_tok(TT_SEMICOLON, ";");
         } else
-        if (lexer->text[lexer->pos] == '='
-         || lexer->text[lexer->pos] == '+'
-         || lexer->text[lexer->pos] == '-'
-         || lexer->text[lexer->pos] == '*'
-         || lexer->text[lexer->pos] == '/') {
-            lexer->buf[0] = lexer->text[lexer->pos];
-            lexer->buf[1] = '\0';
-            push_tok(TT_BOP, lexer->buf);
+        if (lexer->text[lexer->pos] == '=') {
+            push_tok(TT_EQ, "=");
+        } else
+        if (lexer->text[lexer->pos] == '+') {
+            push_tok(TT_PLUS, "+");
+        } else
+        if (lexer->text[lexer->pos] == '-') {
+            push_tok(TT_MINUS, "-");
+        } else
+        if (lexer->text[lexer->pos] == '*') {
+            push_tok(TT_EQ, "*");
+        } else
+        if (lexer->text[lexer->pos] == '/') {
+            push_tok(TT_EQ, "/");
         } else
         if (isalpha(lexer->text[lexer->pos]) || lexer->text[lexer->pos] == '_') {
             lexer_alpha_parse(lexer);
+            lexer->pos--;
+        } else
+        if (isdigit(lexer->text[lexer->pos])) {
+            lexer_digit_parse(lexer);
             lexer->pos--;
         }
     }
@@ -98,6 +109,16 @@ void lexer_buf_analis(lexer_info_t *lexer)
     } else {
         push_tok(TT_IDENT, lexer->buf);
     }
+}
+
+void lexer_digit_parse(lexer_info_t *lexer)
+{
+    size_t i = 0;
+    while (isdigit(lexer->text[lexer->pos])) {
+        lexer->buf[i++] = lexer->text[lexer->pos++];
+    }
+    lexer->buf[i] = '\0';
+    push_tok(TT_INT_LIT, lexer->buf);
 }
 
 #endif
