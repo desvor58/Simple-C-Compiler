@@ -12,7 +12,7 @@
 #include "preproc.h"
 #include "lexer.h"
 
-#include "hashmap.h"
+#include "types/vector.h"
 
 char   *code;
 args_t  args;
@@ -46,25 +46,10 @@ void ast_print(ast_node_t *node, int tab)
     }
 }
 
-genlist(int)
+genvector(int, 32)
 
 int main(int argc, char **argv)
 {
-    int v1 = 5;
-    int v2 = 7;
-    int v3 = 1;
-
-    list_int_pair_t *list = list_int_create();
-    list_int_add(list, &v1);
-    list_int_add(list, &v2);
-    list_int_add(list, &v3);
-
-    foreach(list_int_pair_t, list) {
-        printf_s("%d\n", *cur->val);
-    }
-
-    return 0;
-
     err_stk = (error_stk_t*)malloc(sizeof(error_stk_t));
     err_stk->top = 0;
 

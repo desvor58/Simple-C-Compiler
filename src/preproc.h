@@ -2,7 +2,7 @@
 #define PREPROC_H
 
 #include "types.h"
-#include "hashmap.h"
+#include "types/hashmap.h"
 
 typedef struct {
     args_t args;

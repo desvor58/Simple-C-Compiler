@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #include "config.h"
-#include "list.h"
+#include "types/list.h"
 
 typedef          char   i8;
 typedef          short  i16;

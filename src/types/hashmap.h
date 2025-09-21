@@ -1,7 +1,7 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#include "types.h"
+#include "list.h"
 #include "crc32.h"
 
 #define genhashmap(Ty)  \
