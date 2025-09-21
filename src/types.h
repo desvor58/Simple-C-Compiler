@@ -31,25 +31,11 @@ typedef struct {
     int  flags;
 } args_t;
 
-enum {
-    ERROR_CODE_OK,
-    ERROR_CODE_EXPECTED_FLAG_NAME,
-    ERROR_CODE_UNKNOW_FLAG_NAME,
-    ERROR_CODE_WRONG_SYMBOL,
-    ERROR_CODE_TOO_LONG_ARGUMENT,
-    ERROR_CODE_EXPECTED_INPUT_FILE,
-    ERROR_CODE_UNKNOW_PREPROC_DERECTIVE,
-    ERROR_CODE_NO_SUCH_INCLUDED_FILE,
-    ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT,
-    ERROR_CODE_UNKNOW_IDENTIFIRE,
-};
-
 typedef struct {
     const char *msg;
     char        file[MAX_IDENT_SIZE];
     size_t      line;
     size_t      chpos;
-    int         exit_code;
 } error_t;
 
 typedef struct {
@@ -57,26 +43,54 @@ typedef struct {
     size_t  top;
 } error_stk_t;
 
-error_t gen_error(const char *msg, char *file, size_t line, size_t chpos, int exit_code)
+error_t gen_error(const char *msg, char *file, size_t line, size_t chpos)
 {
     error_t err;
     err.msg = msg;
     strcpy(err.file, file);
     err.line = line;
     err.chpos = chpos;
-    err.exit_code = exit_code;
     return err;
 }
 
-#define errOK gen_error("", "", 0, 0, ERROR_CODE_OK)
+#define errOK gen_error("", "", 0, 0)
 
 void put_error(error_t err, int fatal)
 {
     printf_s("%s:%u:%u:error: %s\n", err.file, err.line, err.chpos, err.msg);
     if (fatal) {
-        exit(err.exit_code);
+        exit(1);
     }
 }
+
+
+typedef enum {
+    CT_CHAR,
+    CT_SHORT,
+    CT_INT,
+    CT_LONG,
+    CT_LONG_LONG,
+    CT_STRUCT,
+} ctype_type;
+
+#define CTYPE_IS_POINTER  1
+#define CTYPE_IS_ARRAY    2
+#define CTYPE_IS_UNSIGNED 4
+
+typedef enum {
+    CTM_POINTER,
+    CTM_ARRAY,
+    CTM_UNSIGNED,
+    CTM_STATIC,
+    CTM_CONST,
+} ctype_modifire_t;
+
+typedef struct {
+    ctype_type type;
+    ctype_modifire_t modifires[8];
+    size_t           modifires_top;
+} ctype_t;
+
 
 typedef enum {
     TT_TYPE_NAME,
@@ -90,20 +104,24 @@ typedef enum {
     TT_RPARENT,
     TT_LBRACKET,
     TT_RBRACKET,
+    TT_LSQUARE_BRACKET,
+    TT_RSQUARE_BRACKET,
     TT_INT_LIT,
     TT_FLOAT_LIT,
     TT_STR_LIT,
     TT_SEMICOLON,
-} token_type_t;
+} token_type;
 
 typedef struct {
-    token_type_t type;
-    char         val[MAX_IDENT_SIZE];
-    size_t       line_ref;
-    size_t       chpos_ref;
+    token_type type;
+    char       val[MAX_IDENT_SIZE];
+    size_t     line_ref;
+    size_t     chpos_ref;
 } token_t;
 
-token_t gen_token(token_type_t type, char *val, size_t line_ref, size_t chpos_ref)
+genlist(token_t)
+
+token_t gen_token(token_type type, char *val, size_t line_ref, size_t chpos_ref)
 {
     token_t tok;
     tok.type = type;
@@ -111,6 +129,64 @@ token_t gen_token(token_type_t type, char *val, size_t line_ref, size_t chpos_re
     tok.line_ref = line_ref;
     tok.chpos_ref = chpos_ref;
     return tok;
+}
+
+
+typedef enum {
+    NT_TRANSLATION_UNIT,
+    NT_FUNCTION_DECL,
+    NT_VARIABLE_DECL,
+    NT_EXPR,
+    NT_BOP,
+    NT_UOP,
+    NT_INT_LIT,
+    NT_STR_LIT,
+    NT_FLOAT_LIT,
+    NT_FUNCTION_CALL,
+} ast_node_type;
+
+typedef struct {
+    ctype_t type;
+    char    name[MAX_IDENT_SIZE];
+} ast_var_info_t;
+
+extern struct list_ast_node_t_pair_t;
+
+typedef struct {
+    ast_node_type                  type;
+    struct list_ast_node_t_pair_t *childs;
+    void                          *info;
+} ast_node_t;
+
+genlist(ast_node_t);
+
+ast_node_t *gen_ast_node(ast_node_type type, void *info)
+{
+    ast_node_t *node = malloc(sizeof(ast_node_t));
+    node->type   = type;
+    node->info   = info;
+    node->childs = list_ast_node_t_create();
+    return node;
+}
+
+ast_node_t *ast_node_add_child(ast_node_t *parent, ast_node_t *child)
+{
+    list_ast_node_t_add(parent->childs, child);
+    return child;
+}
+
+void ast_node_delete(ast_node_t *ast)
+{
+    list_ast_node_t_pair_t *cur = ast->childs;
+    while (cur) {
+        if (cur->val) {
+            ast_node_delete(cur->val);
+        }
+        cur = cur->next;
+    }
+
+    list_ast_node_t_free(ast->childs);
+    free(ast);
 }
 
 

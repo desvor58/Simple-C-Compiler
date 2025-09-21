@@ -1,6 +1,8 @@
 #ifndef LIST_H
 #define LIST_H
 
+#define foreach(Ty, list) for (Ty *cur = list; cur && cur->val; cur = cur->next)
+
 #define genlist(Ty)  \
 struct list_##Ty##_pair_t {  \
     Ty                        *val;  \

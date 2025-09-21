@@ -4,7 +4,7 @@
 #include "types.h"
 #include "hashmap.h"
 
-typedef struct preproc_info_t {
+typedef struct {
     args_t args;
     char  *text;
     char  *buf;
@@ -43,7 +43,6 @@ hashmap_macro_info_t_t *macros = 0;
 
 static error_stk_t *err_stk;
 
-// errs size = ERROR_STK_SIZE
 void preprocess(preproc_info_t *preproc)
 {
     // printf_s("start\n");
@@ -85,8 +84,7 @@ void preprocess(preproc_info_t *preproc)
                 err_stk->stk[err_stk->top++] = gen_error("Unknow preprocessor derective",
                                                          preproc->file,
                                                          preproc->line,
-                                                         preproc->chpos,
-                                                         ERROR_CODE_UNKNOW_PREPROC_DERECTIVE);
+                                                         preproc->chpos);
             }
             preproc->pos--;
         } else
@@ -101,8 +99,7 @@ void preprocess(preproc_info_t *preproc)
                     put_error(gen_error("too large translation unit",
                                         preproc->file,
                                         preproc->line,
-                                        preproc->chpos,
-                                        ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
+                                        preproc->chpos), 1);
                 }
                 preproc->pos = start_pos;
             }
@@ -136,8 +133,7 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         if (!included_file) {
             err_stk->stk[err_stk->top++] = gen_error("No such included file",
                                                         preproc->file, preproc->line,
-                                                        preproc->chpos,
-                                                        ERROR_CODE_NO_SUCH_INCLUDED_FILE);
+                                                        preproc->chpos);
             return;
         }
         char *included_code = (char*)malloc(MAX_CODE_SIZE);
@@ -157,8 +153,7 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
             put_error(gen_error("too large included file",
                                 preproc->file,
                                 preproc->line,
-                                preproc->chpos,
-                                ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
+                                preproc->chpos), 1);
         }
 
         preproc->pos = start_pos + strlen(included_code);
@@ -190,8 +185,7 @@ void prerpoc_derective_define(preproc_info_t *preproc, size_t start_pos)
         put_error(gen_error("too large translation unit",
                             preproc->file,
                             preproc->line,
-                            preproc->chpos,
-                            ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
+                            preproc->chpos), 1);
     }
     preproc->pos = start_pos;
 }
@@ -205,16 +199,14 @@ void prerpoc_derective_undef(preproc_info_t *preproc, size_t start_pos)
         err_stk->stk[err_stk->top++] = gen_error("unknow identifire",
                                                     preproc->file,
                                                     preproc->line,
-                                                    preproc->chpos,
-                                                    ERROR_CODE_UNKNOW_IDENTIFIRE);
+                                                    preproc->chpos);
     }
     err = buf_replace(preproc->text, MAX_CODE_SIZE, start_pos, preproc->pos + 1, "\n");
     if (err) {
         put_error(gen_error("too large translation unit",
                             preproc->file,
                             preproc->line,
-                            preproc->chpos,
-                            ERROR_CODE_TOO_LARGE_TRANSLATION_UNIT), 1);
+                            preproc->chpos), 1);
     }
     preproc->pos = start_pos;
 }

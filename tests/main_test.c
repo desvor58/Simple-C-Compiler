@@ -1,2 +1,2 @@
 int a = 5;
-char b = 264;
+char b = 2 * 5 + 3;

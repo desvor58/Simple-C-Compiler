@@ -7,7 +7,7 @@ typedef struct {
     args_t   args;
     char    *text;
     token_t *toks;
-    size_t   toks_top;
+    size_t  *toks_top;
     char    *buf;
     size_t   pos;
     char    *file;
@@ -15,12 +15,12 @@ typedef struct {
     size_t   chpos;
 } lexer_info_t;
 
-void lexer_create(lexer_info_t *lexer, args_t args, char *text, token_t *toks, char *file)
+void lexer_create(lexer_info_t *lexer, args_t args, char *text, token_t *toks, size_t *toks_top, char *file)
 {
     lexer->args     = args;
     lexer->text     = text;
     lexer->toks     = toks;
-    lexer->toks_top = 0;
+    lexer->toks_top = toks_top;
     lexer->buf      = (char*)malloc(sizeof(char) * MAX_IDENT_SIZE);
     lexer->pos      = 0;
     lexer->file     = file;
@@ -37,11 +37,17 @@ void lexer_alpha_parse(lexer_info_t *lexer);
 void lexer_digit_parse(lexer_info_t *lexer);
 void lexer_buf_analis(lexer_info_t *lexer);
 
-#define push_tok(type, val) lexer->toks[lexer->toks_top++] = gen_token(type, val, lexer->line, lexer->chpos)
+#define push_tok(type, val) lexer->toks[(*lexer->toks_top)++] = gen_token(type, val, lexer->line, lexer->chpos)
 
 void lex_text(lexer_info_t *lexer)
 {
     for (lexer->pos = 0; lexer->pos < strlen(lexer->text); lexer->pos++) {
+        if (lexer->text[lexer->pos] == '\n') {
+            lexer->line++;
+            lexer->chpos = 1;
+        } else {
+            lexer->chpos++;
+        }
         if (lexer->text[lexer->pos] == '(') {
             push_tok(TT_LPARENT, "(");
         } else
@@ -53,6 +59,12 @@ void lex_text(lexer_info_t *lexer)
         } else
         if (lexer->text[lexer->pos] == '}') {
             push_tok(TT_RBRACKET, "}");
+        } else
+        if (lexer->text[lexer->pos] == '[') {
+            push_tok(TT_LSQUARE_BRACKET, "[");
+        } else
+        if (lexer->text[lexer->pos] == ']') {
+            push_tok(TT_RSQUARE_BRACKET, "]");
         } else
         if (lexer->text[lexer->pos] == ';') {
             push_tok(TT_SEMICOLON, ";");

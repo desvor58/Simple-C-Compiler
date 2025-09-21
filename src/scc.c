@@ -28,25 +28,60 @@ void check_errs()
     }
 }
 
+void ast_print(ast_node_t *node, int tab)
+{
+    char *str = "";
+    if (node->type == NT_TRANSLATION_UNIT) str = "translation unit";
+    if (node->type == NT_EXPR)             str = "expr";
+    if (node->type == NT_INT_LIT)          str = "int";
+    if (node->type == NT_STR_LIT)          str = "str";
+    for (int i = 0; i < tab; i++) {
+        putchar(' ');
+    }
+    printf_s("%s\n", str);
+    size_t i = 0;
+    while (i < list_ast_node_t_size(node->childs)) {
+        ast_print(list_ast_node_t_get(node->childs, i), tab + 1);
+        i++;
+    }
+}
+
+genlist(int)
+
 int main(int argc, char **argv)
 {
+    int v1 = 5;
+    int v2 = 7;
+    int v3 = 1;
+
+    list_int_pair_t *list = list_int_create();
+    list_int_add(list, &v1);
+    list_int_add(list, &v2);
+    list_int_add(list, &v3);
+
+    foreach(list_int_pair_t, list) {
+        printf_s("%d\n", *cur->val);
+    }
+
+    return 0;
+
     err_stk = (error_stk_t*)malloc(sizeof(error_stk_t));
     err_stk->top = 0;
 
     code = (char*)malloc(MAX_CODE_SIZE);
 
     error_t err = args_parse(&args, argc, argv);
-    if (err.exit_code) {
+    if (strlen(err.msg)) {
         put_error(err, 1);
     }
     
     if (!strcmp(args.infile_name, "")) {
-        put_error(gen_error("expected input file name", "", 0, 0, ERROR_CODE_EXPECTED_INPUT_FILE), 1);
+        put_error(gen_error("expected input file name", "", 0, 0), 1);
     }
     FILE *infile;
     fopen_s(&infile, args.infile_name, "r");
     if (!infile) {
-        put_error(gen_error("input file not be opened", "", 0, 0, 1488), 1);
+        put_error(gen_error("input file not be opened", "", 0, 0), 1);
     }
     get_file_text(infile, code);
     fclose(infile);
@@ -62,11 +97,12 @@ int main(int argc, char **argv)
 
     lexer_info_t *lexer = malloc(sizeof(lexer_info_t));
     token_t *toks = malloc(sizeof(token_t)*TOKS_SIZE);
-    lexer_create(lexer, args, code, toks, args.infile_name);
+    size_t toks_top = 0;
+    lexer_create(lexer, args, code, toks, &toks_top, args.infile_name);
     lex_text(lexer);
 
-    for (size_t i = 0; i < lexer->toks_top; i++) {
-        printf_s("%u %s\n", lexer->toks[i].type, lexer->toks[i].val);
+    for (size_t i = 0; i < toks_top; i++) {
+        printf_s("%u:%u %u %s\n", toks[i].line_ref, toks[i].chpos_ref, toks[i].type, toks[i].val);
     }
 
     lexer_delete(lexer);

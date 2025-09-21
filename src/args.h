@@ -5,10 +5,10 @@
 #include "types.h"
 
 // dst size = MAX_ARG_SIZE;
-error_t __args_parse_get_tok(char *dst, int argc, char **argv, int *cur_arg)
+error_t args_parse_get_tok(char *dst, int argc, char **argv, int *cur_arg)
 {
     if (strlen(argv[++(*cur_arg)]) > MAX_ARG_SIZE) {
-        return gen_error("too long argument", "", 0, 0, ERROR_CODE_TOO_LONG_ARGUMENT);
+        return gen_error("too long argument", "", 0, 0);
     }
     strcpy(dst, argv[*cur_arg]);
 
@@ -24,11 +24,11 @@ error_t args_parse(args_t *args, int argc, char **argv)
     for (int cur_arg = 1; cur_arg < argc; cur_arg++) {
         if (argv[cur_arg][0] == '-') {
             if (argv[cur_arg][1] == '\0') {
-                return gen_error("expected flag name", args->infile_name, 0, 0, ERROR_CODE_EXPECTED_FLAG_NAME);
+                return gen_error("expected flag name", args->infile_name, 0, 0);
             }
             if (argv[cur_arg][1] == 'o') {
-                error_t err = __args_parse_get_tok(args->outfile_name, argc, argv, &cur_arg);
-                if (err.exit_code) {
+                error_t err = args_parse_get_tok(args->outfile_name, argc, argv, &cur_arg);
+                if (strlen(err.msg)) {
                     printf_s("%s", err.msg);
                     return err;
                 }
@@ -53,7 +53,7 @@ error_t args_parse(args_t *args, int argc, char **argv)
             if (argv[cur_arg][1] == 'c') {
                 args->flags |= ARGS_FLG_OBJ_STOP;
             } else {
-                return gen_error("unknow flag name", args->infile_name, 0, 0, ERROR_CODE_UNKNOW_FLAG_NAME);
+                return gen_error("unknow flag name", args->infile_name, 0, 0);
             }
         }
         if (cur_arg == 1) {
