@@ -41,7 +41,7 @@ genhashmap(macro_info_t)
 
 hashmap_macro_info_t_t *macros = 0;
 
-static error_stk_t *err_stk;
+static vector_error_t_t *err_stk;
 
 void preprocess(preproc_info_t *preproc)
 {
@@ -81,10 +81,10 @@ void preprocess(preproc_info_t *preproc)
             if (!strcmp(preproc->buf, "#undef")) {
                 prerpoc_derective_undef(preproc, start_pos);
             } else {
-                err_stk->stk[err_stk->top++] = gen_error("Unknow preprocessor derective",
-                                                         preproc->file,
-                                                         preproc->line,
-                                                         preproc->chpos);
+                vector_error_t_push_back(err_stk, gen_error("Unknow preprocessor derective",
+                                                            preproc->file,
+                                                            preproc->line,
+                                                            preproc->chpos));
             }
             preproc->pos--;
         } else
@@ -131,9 +131,9 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         fopen_s(&included_file, full_path, "r");
         free(full_path);
         if (!included_file) {
-            err_stk->stk[err_stk->top++] = gen_error("No such included file",
+            vector_error_t_push_back(err_stk, gen_error("No such included file",
                                                         preproc->file, preproc->line,
-                                                        preproc->chpos);
+                                                        preproc->chpos));
             return;
         }
         char *included_code = (char*)malloc(MAX_CODE_SIZE);
@@ -196,10 +196,10 @@ void prerpoc_derective_undef(preproc_info_t *preproc, size_t start_pos)
     preproc_gettok(preproc);
     int err = hashmap_macro_info_t_delete(macros, preproc->buf);
     if (err) {
-        err_stk->stk[err_stk->top++] = gen_error("unknow identifire",
+        vector_error_t_push_back(err_stk, gen_error("unknow identifire",
                                                     preproc->file,
                                                     preproc->line,
-                                                    preproc->chpos);
+                                                    preproc->chpos));
     }
     err = buf_replace(preproc->text, MAX_CODE_SIZE, start_pos, preproc->pos + 1, "\n");
     if (err) {

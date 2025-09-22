@@ -16,14 +16,14 @@
 
 char   *code;
 args_t  args;
-static error_stk_t *err_stk;
+static vector_error_t_t *err_stk;
 
 void check_errs()
 {
-    for (int i = 0; i < err_stk->top; i++) {
-        put_error(err_stk->stk[i], 0);
+    for (int i = 0; i < err_stk->size; i++) {
+        put_error(err_stk->arr[i], 0);
     }
-    if (err_stk->top) {
+    if (err_stk->size) {
         exit(1);
     }
 }
@@ -46,12 +46,9 @@ void ast_print(ast_node_t *node, int tab)
     }
 }
 
-genvector(int, 32)
-
 int main(int argc, char **argv)
 {
-    err_stk = (error_stk_t*)malloc(sizeof(error_stk_t));
-    err_stk->top = 0;
+    err_stk = vector_error_t_create();
 
     code = (char*)malloc(MAX_CODE_SIZE);
 
@@ -81,17 +78,18 @@ int main(int argc, char **argv)
     }
 
     lexer_info_t *lexer = malloc(sizeof(lexer_info_t));
-    token_t *toks = malloc(sizeof(token_t)*TOKS_SIZE);
-    size_t toks_top = 0;
-    lexer_create(lexer, args, code, toks, &toks_top, args.infile_name);
+    vector_token_t_t *toks = vector_token_t_create();
+    lexer_create(lexer, args, code, toks, args.infile_name);
     lex_text(lexer);
 
-    for (size_t i = 0; i < toks_top; i++) {
-        printf_s("%u:%u %u %s\n", toks[i].line_ref, toks[i].chpos_ref, toks[i].type, toks[i].val);
+    for (size_t i = 0; i < toks->size; i++) {
+        printf_s("%u:%u %u %s\n", toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
     }
 
     lexer_delete(lexer);
     free(lexer);
+
+    vector_token_t_free(toks);
 
     check_errs();
 

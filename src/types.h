@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include "types/list.h"
+#include "types/vector.h"
 
 typedef          char   i8;
 typedef          short  i16;
@@ -38,10 +39,7 @@ typedef struct {
     size_t      chpos;
 } error_t;
 
-typedef struct {
-    error_t stk[ERROR_STK_SIZE];
-    size_t  top;
-} error_stk_t;
+genvector(error_t, 8);
 
 error_t gen_error(const char *msg, char *file, size_t line, size_t chpos)
 {
@@ -119,7 +117,7 @@ typedef struct {
     size_t     chpos_ref;
 } token_t;
 
-genlist(token_t)
+genvector(token_t, 128)
 
 token_t gen_token(token_type type, char *val, size_t line_ref, size_t chpos_ref)
 {
