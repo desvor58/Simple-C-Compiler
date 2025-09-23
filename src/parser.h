@@ -11,7 +11,7 @@ typedef struct {
     size_t            pos;
 } parser_info_t;
 
-void parser_create(parser_info_t *parser, args_t args, token_t *toks, char *file)
+void parser_create(parser_info_t *parser, args_t args, vector_token_t_t *toks, char *file)
 {
     parser->args     = args;
     parser->toks     = toks;
@@ -27,51 +27,56 @@ void parser_delete(parser_info_t *parser)
 
 void parser_decl_parse(parser_info_t *parser);
 
-static error_stk_t *err_stk;
+static vector_error_t_t *err_stk;
 
 void parse(parser_info_t *parser)
 {
     for (parser->pos = 0; parser->pos < parser->toks->size; parser->pos++) {
-        if (parser->toks->arr[parser->pos].type = TT_TYPE_NAME) {
+        if (parser->toks->arr[parser->pos].type == TT_TYPE_NAME) {
             parser_decl_parse(parser);
         }
     }
 }
 
-void parser_get_val(parser_info_t *parser, size_t offset)
+void parser_get_val(parser_info_t *parser, vector_token_t_t *expr)
 {
-    if (parser->toks->arr[parser->pos + offset].type == TT_INT_LIT) {
-        ast_node_add_child(parser->cur_node, gen_ast_node(NT_INT_LIT, parser->toks->arr[parser->pos + offset].val));
+    if (expr->arr[0].type == TT_INT_LIT) {
+        ast_node_add_child(parser->cur_node, gen_ast_node(NT_INT_LIT, expr->arr[0].val));
     } else
-    if (parser->toks->arr[parser->pos + offset].type == TT_STR_LIT) {
-        ast_node_add_child(parser->cur_node, gen_ast_node(NT_STR_LIT, parser->toks->arr[parser->pos + offset].val));
+    if (expr->arr[0].type == TT_STR_LIT) {
+        ast_node_add_child(parser->cur_node, gen_ast_node(NT_STR_LIT, expr->arr[0].val));
     } else {
         exit(76);
     }
 }
 
-void parser_expr_parse(parser_info_t *parser, token_t *buf)
+void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
 {
-    if (parser->toks->arr[parser->pos + offset + 1].type != TT_LPARENT
-     || parser->toks->arr[parser->pos + offset + 1].type != TT_LBRACKET
-     || parser->toks->arr[parser->pos + offset + 1].type != TT_LSQUARE_BRACKET
-     || parser->toks->arr[parser->pos + offset + 1].type != TT_SEMICOLON
-    ) {
-        parser_get_val(parser, offset);
+    if (expr->size == 1) {
+        parser_get_val(parser, expr);
         return;
     }
     ast_node_t *ast_acc = parser->cur_node;
     size_t i = 0;
-    while (parser->toks[parser->pos + offset + i].type != TT_LPARENT
-        && parser->toks[parser->pos + offset + i].type != TT_LBRACKET
-        && parser->toks[parser->pos + offset + i].type != TT_LSQUARE_BRACKET
-        && parser->toks[parser->pos + offset + i].type != TT_SEMICOLON
-    ) {
-        if (parser->toks[parser->pos + offset + i].type == TT_STAR) {
+    while (i < expr->size) {
+        if (expr->arr[i].type == TT_STAR) {
+            vector_token_t_t *ex1 = vector_token_t_create();
+            vector_token_t_t *ex2 = vector_token_t_create();
             parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_BOP, "*"));
-        } else
-        if (parser->toks[parser->pos + offset + 1].type == TT_SLASH) {
-            parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_BOP, "/"));
+            for (size_t j = 0; j < i; j++) {
+                vector_token_t_push_back(ex1, expr->arr[j]);
+                printf_s("ex1: type:%u val:%s\n", ex1->arr[j], ex1->arr[j].val);
+            }
+            for (size_t j = i + 1; j < expr->size; j++) {
+                vector_token_t_push_back(ex2, expr->arr[j]);
+                printf_s("ex2: type:%u val:%s\n", ex2->arr[j], ex2->arr[j].val);
+            }
+
+            parser_expr_parse(parser, ex1);
+            parser_expr_parse(parser, ex2);
+
+            vector_token_t_free(ex1);
+            vector_token_t_free(ex2);
         }
         i++;
     }
@@ -92,10 +97,10 @@ void parser_var_decl_parse(parser_info_t *parser, size_t offset, ctype_t type, t
     if (parser->toks->arr[parser->pos = offset].type == TT_SEMICOLON) {
         return;
     } else {
-        err_stk->stk[err_stk->top++] = gen_error("expected `=`, `;` or `(`",
-                                                 parser->args.infile_name,
-                                                 parser->toks->arr[parser->pos + 1].line_ref,
-                                                 parser->toks->arr[parser->pos + 1].chpos_ref);
+        vector_error_t_push_back(err_stk, gen_error("expected `=`, `;` or `(`",
+                                                    parser->args.infile_name,
+                                                    parser->toks->arr[parser->pos + 1].line_ref,
+                                                    parser->toks->arr[parser->pos + 1].chpos_ref));
     }
 }
 
@@ -104,10 +109,10 @@ void parser_decl_parse(parser_info_t *parser)
     size_t offset = 1;
     while (parser->toks->arr[parser->pos + offset].type != TT_IDENT) {
         if (parser->pos + ++offset == parser->toks->size) {
-            err_stk->stk[err_stk->top++] = gen_error("expected identifire",
-                                                     parser->args.infile_name,
-                                                     parser->toks->arr[parser->pos + 1].line_ref,
-                                                     parser->toks->arr[parser->pos + 1].chpos_ref);
+            vector_error_t_push_back(err_stk, gen_error("expected identifire",
+                                                        parser->args.infile_name,
+                                                        parser->toks->arr[parser->pos + 1].line_ref,
+                                                        parser->toks->arr[parser->pos + 1].chpos_ref));
             return;
         }
     }
@@ -134,23 +139,21 @@ void parser_decl_parse(parser_info_t *parser)
             if (parser->toks->arr[parser->pos + offset + i + 1].type == TT_RSQUARE_BRACKET) {
                 type.modifires[type.modifires_top++] = CTM_ARRAY;
             } else {
-                err_stk->stk[err_stk->top++] = gen_error("expected right bracket",
-                                                         parser->args.infile_name,
-                                                         parser->toks->arr[parser->pos + 1].line_ref,
-                                                         parser->toks->arr[parser->pos + 1].chpos_ref);
+                vector_error_t_push_back(err_stk, gen_error("expected right bracket",
+                                                            parser->args.infile_name,
+                                                            parser->toks->arr[parser->pos + 1].line_ref,
+                                                            parser->toks->arr[parser->pos + 1].chpos_ref));
             }
         } else {
-            err_stk->stk[err_stk->top++] = gen_error("unknow type modifire",
-                                                     parser->args.infile_name,
-                                                     parser->toks->arr[parser->pos + 1].line_ref,
-                                                     parser->toks->arr[parser->pos + 1].chpos_ref);
+            vector_error_t_push_back(err_stk, gen_error("unknow type modifire",
+                                                        parser->args.infile_name,
+                                                        parser->toks->arr[parser->pos + 1].line_ref,
+                                                        parser->toks->arr[parser->pos + 1].chpos_ref));
         }
         i++;
     }
     i = -1;
-    while (parser->toks->arr[parser->pos + offset + i].type != TT_EQ
-        || parser->toks->arr[parser->pos + offset + i].type != TT_LPARENT
-    ) {
+    while (parser->toks->arr[parser->pos + offset + i].type != TT_TYPE_NAME) {
         if (parser->toks->arr[parser->pos + offset + i].type == TT_STAR) {
             type.modifires[type.modifires_top++] = CTM_POINTER;
         } else
@@ -164,16 +167,16 @@ void parser_decl_parse(parser_info_t *parser)
             if (!strcmp(parser->toks->arr[parser->pos + offset + i].val, "unsigned")) {
                 type.modifires[type.modifires_top++] = CTM_UNSIGNED;
             } else {
-                err_stk->stk[err_stk->top++] = gen_error("unknow type modifire",
-                                                         parser->args.infile_name,
-                                                         parser->toks->arr[parser->pos + 1].line_ref,
-                                                         parser->toks->arr[parser->pos + 1].chpos_ref);
+                vector_error_t_push_back(err_stk, gen_error("unknow type modifire",
+                                                            parser->args.infile_name,
+                                                            parser->toks->arr[parser->pos + 1].line_ref,
+                                                            parser->toks->arr[parser->pos + 1].chpos_ref));
             }
         } else {
-            err_stk->stk[err_stk->top++] = gen_error("unknow type modifire",
-                                                     parser->args.infile_name,
-                                                     parser->toks->arr[parser->pos + 1].line_ref,
-                                                     parser->toks->arr[parser->pos + 1].chpos_ref);
+            vector_error_t_push_back(err_stk, gen_error("unknow type modifire",
+                                                        parser->args.infile_name,
+                                                        parser->toks->arr[parser->pos + 1].line_ref,
+                                                        parser->toks->arr[parser->pos + 1].chpos_ref));
         }
         i--;
     }

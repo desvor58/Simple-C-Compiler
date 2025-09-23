@@ -12,10 +12,13 @@
 #include "preproc.h"
 #include "lexer.h"
 
+#include "parser.h"
+
 #include "types/vector.h"
 
 char   *code;
 args_t  args;
+
 static vector_error_t_t *err_stk;
 
 void check_errs()
@@ -35,10 +38,12 @@ void ast_print(ast_node_t *node, int tab)
     if (node->type == NT_EXPR)             str = "expr";
     if (node->type == NT_INT_LIT)          str = "int";
     if (node->type == NT_STR_LIT)          str = "str";
+    if (node->type == NT_BOP)              str = "bop";
+    if (node->type == NT_UOP)              str = "uop";
     for (int i = 0; i < tab; i++) {
         putchar(' ');
     }
-    printf_s("%s\n", str);
+    printf_s("%s  %s\n", str, node->info);
     size_t i = 0;
     while (i < list_ast_node_t_size(node->childs)) {
         ast_print(list_ast_node_t_get(node->childs, i), tab + 1);
@@ -88,6 +93,22 @@ int main(int argc, char **argv)
 
     lexer_delete(lexer);
     free(lexer);
+
+    vector_token_t_t *my_toks = vector_token_t_create();
+    vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "5", 0, 0));
+    vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
+    vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "2", 0, 0));
+    // vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
+    // vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "3", 0, 0));
+
+    parser_info_t *parser = malloc(sizeof(parser_info_t));
+    parser_create(parser, args, my_toks, args.infile_name);
+
+    parser_expr_parse(parser, my_toks);
+
+    ast_print(parser->ast_root, 0);
+
+    parser_delete(parser);
 
     vector_token_t_free(toks);
 
