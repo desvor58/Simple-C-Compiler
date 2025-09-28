@@ -77,10 +77,10 @@ void lex_text(lexer_info_t *lexer)
             push_tok(TT_MINUS, "-");
         } else
         if (lexer->text[lexer->pos] == '*') {
-            push_tok(TT_EQ, "*");
+            push_tok(TT_STAR, "*");
         } else
         if (lexer->text[lexer->pos] == '/') {
-            push_tok(TT_EQ, "/");
+            push_tok(TT_SLASH, "/");
         } else
         if (isalpha(lexer->text[lexer->pos]) || lexer->text[lexer->pos] == '_') {
             lexer_alpha_parse(lexer);

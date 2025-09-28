@@ -33,8 +33,9 @@ void check_errs()
 
 void ast_print(ast_node_t *node, int tab)
 {
-    char *str = "";
+    char *str = "undef";
     if (node->type == NT_TRANSLATION_UNIT) str = "translation unit";
+    if (node->type == NT_VARIABLE_DECL)    str = "var decl";
     if (node->type == NT_EXPR)             str = "expr";
     if (node->type == NT_INT_LIT)          str = "int";
     if (node->type == NT_STR_LIT)          str = "str";
@@ -94,17 +95,19 @@ int main(int argc, char **argv)
     lexer_delete(lexer);
     free(lexer);
 
-    vector_token_t_t *my_toks = vector_token_t_create();
-    vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "5", 0, 0));
-    vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
-    vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "2", 0, 0));
-    vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
-    vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "3", 0, 0));
+    // vector_token_t_t *my_toks = vector_token_t_create();
+    // vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "5", 0, 0));
+    // vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
+    // vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "2", 0, 0));
+    // vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
+    // vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "3", 0, 0));
 
     parser_info_t *parser = malloc(sizeof(parser_info_t));
-    parser_create(parser, args, my_toks, args.infile_name);
+    parser_create(parser, args, toks, args.infile_name);
 
-    parser_expr_parse(parser, my_toks);
+    parse(parser);
+
+    // parser_expr_parse(parser, my_toks);
 
     ast_print(parser->ast_root, 0);
 

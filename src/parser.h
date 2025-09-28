@@ -90,15 +90,20 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
 
 void parser_var_decl_parse(parser_info_t *parser, size_t offset, ctype_t type, token_t ident)
 {
+    ast_node_t *ast_acc = parser->cur_node;
     ast_var_info_t *var = (ast_var_info_t*)malloc(sizeof(ast_var_info_t));
     var->type = type;
     strcpy(var->name, ident.val);
-    ast_node_add_child(parser->cur_node, gen_ast_node(NT_VARIABLE_DECL, (void*)var));
+    parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_VARIABLE_DECL, (void*)var));
 
-    if (parser->toks->arr[parser->pos + offset].type == TT_EQ) {
-        
+    if (parser->toks->arr[parser->pos + offset + 1].type == TT_EQ) {
+        vector_token_t_t *expr = vector_token_t_create();
+        for (size_t i = 2; parser->toks->arr[parser->pos + offset + i].type != TT_SEMICOLON; i++) {
+            vector_token_t_push_back(expr, parser->toks->arr[parser->pos + offset + i]);
+        }
+        parser_expr_parse(parser, expr);
     } else
-    if (parser->toks->arr[parser->pos = offset].type == TT_SEMICOLON) {
+    if (parser->toks->arr[parser->pos + offset + 1].type == TT_SEMICOLON) {
         return;
     } else {
         vector_error_t_push_back(err_stk, gen_error("expected `=`, `;` or `(`",
@@ -106,6 +111,7 @@ void parser_var_decl_parse(parser_info_t *parser, size_t offset, ctype_t type, t
                                                     parser->toks->arr[parser->pos + 1].line_ref,
                                                     parser->toks->arr[parser->pos + 1].chpos_ref));
     }
+    parser->cur_node = ast_acc;
 }
 
 void parser_decl_parse(parser_info_t *parser)

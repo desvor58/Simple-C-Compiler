@@ -108,7 +108,6 @@ typedef enum {
     TT_FLOAT_LIT,
     TT_STR_LIT,
     TT_SEMICOLON,
-    TT_IGNORETOK,
 } token_type;
 
 typedef struct {
