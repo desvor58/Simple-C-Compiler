@@ -88,19 +88,14 @@ int main(int argc, char **argv)
     lexer_create(lexer, args, code, toks, args.infile_name);
     lex_text(lexer);
 
-    // for (size_t i = 0; i < toks->size; i++) {
-    //     printf_s("%u:%u %u %s\n", toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
-    // }
+    if (args.flags & ARGS_FLG_TOKS_PUT) {
+        for (size_t i = 0; i < toks->size; i++) {
+            printf_s("%u:%u %u %s\n", toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
+        }
+    }
 
     lexer_delete(lexer);
     free(lexer);
-
-    // vector_token_t_t *my_toks = vector_token_t_create();
-    // vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "5", 0, 0));
-    // vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
-    // vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "2", 0, 0));
-    // vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
-    // vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "3", 0, 0));
 
     parser_info_t *parser = malloc(sizeof(parser_info_t));
     parser_create(parser, args, toks, args.infile_name);

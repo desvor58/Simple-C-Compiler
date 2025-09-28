@@ -12,6 +12,7 @@
 
 #define VERSION "PRCC by Desvor v1.0.0\n"
 #define HELP_MENU                                                                            \
+    "usage: scc [options] <C code file name>"                                                \
     "options:\n"                                                                             \
     "    -E         Stop compiling after preprocessing and put translation unit\n"           \
     "    -S         Stop compiling after code-generation and write to a.s generated code\n"  \

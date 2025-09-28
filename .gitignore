@@ -1,5 +1,4 @@
 test.*
-.vscode/
-bin/
+.vscode
+bin
 *.exe
-test.c
