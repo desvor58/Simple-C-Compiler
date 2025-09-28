@@ -108,6 +108,7 @@ typedef enum {
     TT_FLOAT_LIT,
     TT_STR_LIT,
     TT_SEMICOLON,
+    TT_IGNORETOK,
 } token_type;
 
 typedef struct {
@@ -175,18 +176,32 @@ ast_node_t *ast_node_add_child(ast_node_t *parent, ast_node_t *child)
 
 void ast_node_delete(ast_node_t *ast)
 {
-    list_ast_node_t_pair_t *cur = ast->childs;
-    while (cur) {
-        if (cur->val) {
-            ast_node_delete(cur->val);
-        }
-        cur = cur->next;
+    foreach (list_ast_node_t_pair_t, ast->childs) {
+        ast_node_delete(cur->val);
     }
 
     list_ast_node_t_free(ast->childs);
+    if (ast->info) {
+        free(ast->info);
+    }
     free(ast);
 }
 
+// создает навую строку в памяти
+// надобно освобождть
+char *stralc(char *str)
+{
+    char *new_str = malloc(sizeof(char) * strlen(str) + 1);
+    char *c = str;
+    char *n = new_str;
+    while (*c) {
+        *n = *c;
+        n++;
+        c++;
+    }
+    *n = '\0';
+    return new_str;
+}
 
 int buf_insert(char *buf, size_t buf_size, size_t index, char *insert)
 {
@@ -218,8 +233,6 @@ int buf_insert(char *buf, size_t buf_size, size_t index, char *insert)
     return 0;
 }
 
-// create a new string in heap
-// delete part of str and replace to what
 int buf_replace(char *buf, size_t buf_size, u32 repl_start, u32 repl_end, char *repl)
 {
     size_t buflen = strlen(buf);

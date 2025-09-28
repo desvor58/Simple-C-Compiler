@@ -40,11 +40,12 @@ void parse(parser_info_t *parser)
 
 void parser_get_val(parser_info_t *parser, vector_token_t_t *expr)
 {
+    // puts("in num!");
     if (expr->arr[0].type == TT_INT_LIT) {
-        ast_node_add_child(parser->cur_node, gen_ast_node(NT_INT_LIT, expr->arr[0].val));
+        ast_node_add_child(parser->cur_node, gen_ast_node(NT_INT_LIT, stralc(expr->arr[0].val)));
     } else
     if (expr->arr[0].type == TT_STR_LIT) {
-        ast_node_add_child(parser->cur_node, gen_ast_node(NT_STR_LIT, expr->arr[0].val));
+        ast_node_add_child(parser->cur_node, gen_ast_node(NT_STR_LIT, stralc(expr->arr[0].val)));
     } else {
         exit(76);
     }
@@ -52,6 +53,10 @@ void parser_get_val(parser_info_t *parser, vector_token_t_t *expr)
 
 void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
 {
+    // printf_s("parsing this:\n");
+    // for (int i = 0; i < expr->size; i++) {
+    //     printf_s("    type:%u val:%s\n", expr->arr[i].type, expr->arr[i].val);
+    // }
     if (expr->size == 1) {
         parser_get_val(parser, expr);
         return;
@@ -62,14 +67,12 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
         if (expr->arr[i].type == TT_STAR) {
             vector_token_t_t *ex1 = vector_token_t_create();
             vector_token_t_t *ex2 = vector_token_t_create();
-            parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_BOP, "*"));
+            parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_BOP, stralc("*")));
             for (size_t j = 0; j < i; j++) {
                 vector_token_t_push_back(ex1, expr->arr[j]);
-                printf_s("ex1: type:%u val:%s\n", ex1->arr[j], ex1->arr[j].val);
             }
             for (size_t j = i + 1; j < expr->size; j++) {
                 vector_token_t_push_back(ex2, expr->arr[j]);
-                printf_s("ex2: type:%u val:%s\n", ex2->arr[j], ex2->arr[j].val);
             }
 
             parser_expr_parse(parser, ex1);
@@ -77,6 +80,7 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
 
             vector_token_t_free(ex1);
             vector_token_t_free(ex2);
+            break;
         }
         i++;
     }

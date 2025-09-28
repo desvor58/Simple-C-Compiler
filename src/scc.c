@@ -43,7 +43,7 @@ void ast_print(ast_node_t *node, int tab)
     for (int i = 0; i < tab; i++) {
         putchar(' ');
     }
-    printf_s("%s  %s\n", str, node->info);
+    printf_s("%s  %s\n", str, (char*)node->info);
     size_t i = 0;
     while (i < list_ast_node_t_size(node->childs)) {
         ast_print(list_ast_node_t_get(node->childs, i), tab + 1);
@@ -87,9 +87,9 @@ int main(int argc, char **argv)
     lexer_create(lexer, args, code, toks, args.infile_name);
     lex_text(lexer);
 
-    for (size_t i = 0; i < toks->size; i++) {
-        printf_s("%u:%u %u %s\n", toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
-    }
+    // for (size_t i = 0; i < toks->size; i++) {
+    //     printf_s("%u:%u %u %s\n", toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
+    // }
 
     lexer_delete(lexer);
     free(lexer);
@@ -98,8 +98,8 @@ int main(int argc, char **argv)
     vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "5", 0, 0));
     vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
     vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "2", 0, 0));
-    // vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
-    // vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "3", 0, 0));
+    vector_token_t_push_back(my_toks, gen_token(TT_STAR, "*", 0, 0));
+    vector_token_t_push_back(my_toks, gen_token(TT_INT_LIT, "3", 0, 0));
 
     parser_info_t *parser = malloc(sizeof(parser_info_t));
     parser_create(parser, args, my_toks, args.infile_name);
