@@ -25,6 +25,7 @@ void parser_delete(parser_info_t *parser)
     ast_node_delete(parser->ast_root);
 }
 
+void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr);
 void parser_decl_parse(parser_info_t *parser);
 
 static vector_error_t_t *err_stk;
@@ -51,6 +52,25 @@ void parser_get_val(parser_info_t *parser, vector_token_t_t *expr)
     }
 }
 
+void parser_parse_bop(parser_info_t *parser, size_t bop_pos, vector_token_t_t *expr)
+{
+    vector_token_t_t *ex1 = vector_token_t_create();
+    vector_token_t_t *ex2 = vector_token_t_create();
+    parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_BOP, stralc(expr->arr[bop_pos].val)));
+    for (size_t j = 0; j < bop_pos; j++) {
+        vector_token_t_push_back(ex1, expr->arr[j]);
+    }
+    for (size_t j = bop_pos + 1; j < expr->size; j++) {
+        vector_token_t_push_back(ex2, expr->arr[j]);
+    }
+
+    parser_expr_parse(parser, ex1);
+    parser_expr_parse(parser, ex2);
+
+    vector_token_t_free(ex1);
+    vector_token_t_free(ex2);
+}
+
 void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
 {
     // printf_s("parsing this:\n");
@@ -64,25 +84,29 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
     ast_node_t *ast_acc = parser->cur_node;
     size_t i = 0;
     while (i < expr->size) {
-        if (expr->arr[i].type == TT_STAR) {
-            vector_token_t_t *ex1 = vector_token_t_create();
-            vector_token_t_t *ex2 = vector_token_t_create();
-            parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_BOP, stralc("*")));
-            for (size_t j = 0; j < i; j++) {
-                vector_token_t_push_back(ex1, expr->arr[j]);
-            }
-            for (size_t j = i + 1; j < expr->size; j++) {
-                vector_token_t_push_back(ex2, expr->arr[j]);
-            }
-
-            parser_expr_parse(parser, ex1);
-            parser_expr_parse(parser, ex2);
-
-            vector_token_t_free(ex1);
-            vector_token_t_free(ex2);
+        if (expr->arr[i].type == TT_PLUS) {
+            parser_parse_bop(parser, i, expr);
+            break;
+        } else
+        if (expr->arr[i].type == TT_MINUS) {
+            parser_parse_bop(parser, i, expr);
             break;
         }
         i++;
+    }
+    if (i == expr->size) {
+        i = 0;
+        while (i < expr->size) {
+            if (expr->arr[i].type == TT_STAR) {
+                parser_parse_bop(parser, i, expr);
+                break;
+            } else
+            if (expr->arr[i].type == TT_SLASH) {
+                parser_parse_bop(parser, i, expr);
+                break;
+            }
+            i++;
+        }
     }
 
     parser->cur_node = ast_acc;
