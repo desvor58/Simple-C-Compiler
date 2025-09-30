@@ -1,5 +1,6 @@
 # Simple C Compile
-*scc* - compiler writen on **C** which you can use for learn how **C** compilers work
+*scc* - compiler writen on **C** which you can use for learn how **C** compilers work\
+Now *scc* compile code only to wondows platform, but I hope that will change soon
 
 # Building
 ### get make

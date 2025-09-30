@@ -11,18 +11,21 @@ typedef struct {
     size_t            pos;
 } parser_info_t;
 
-void parser_create(parser_info_t *parser, args_t args, vector_token_t_t *toks, char *file)
+parser_info_t *parser_create(args_t args, vector_token_t_t *toks, char *file)
 {
-    parser->args     = args;
-    parser->toks     = toks;
-    parser->ast_root = gen_ast_node(NT_TRANSLATION_UNIT, (void*)0);
-    parser->cur_node = parser->ast_root;
-    parser->pos      = 0;
+    parser_info_t *parser = malloc(sizeof(parser_info_t));
+    parser->args          = args;
+    parser->toks          = toks;
+    parser->ast_root      = gen_ast_node(NT_TRANSLATION_UNIT, (void*)0);
+    parser->cur_node      = parser->ast_root;
+    parser->pos           = 0;
+    return parser;
 }
 
 void parser_delete(parser_info_t *parser)
 {
     ast_node_delete(parser->ast_root);
+    free(parser);
 }
 
 void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr);
@@ -82,6 +85,7 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
         return;
     }
     ast_node_t *ast_acc = parser->cur_node;
+    
     size_t i = 0;
     while (i < expr->size) {
         if (expr->arr[i].type == TT_PLUS) {

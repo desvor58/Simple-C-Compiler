@@ -14,8 +14,9 @@ typedef struct {
     size_t chpos;
 } preproc_info_t;
 
-void preproc_create(preproc_info_t *preproc, args_t args, char *text, char *file)
+preproc_info_t *preproc_create(args_t args, char *text, char *file)
 {
+    preproc_info_t *preproc = malloc(sizeof(preproc_info_t));
     preproc->args  = args;
     preproc->text  = text;
     preproc->buf   = malloc(sizeof(char)*MAX_MACRO_VAL);
@@ -23,11 +24,13 @@ void preproc_create(preproc_info_t *preproc, args_t args, char *text, char *file
     preproc->file  = file;
     preproc->line  = 1;
     preproc->chpos = 0;
+    return preproc;
 }
 
 void preproc_delete(preproc_info_t *preproc)
 {
     free(preproc->buf);
+    free(preproc);
 }
 
 void preproc_skip_notoks(preproc_info_t *preproc);
@@ -140,11 +143,10 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         get_file_text(included_file, included_code);
         fclose(included_file);
 
-        preproc_info_t *_preproc = malloc(sizeof(preproc_info_t));
-        preproc_create(_preproc, preproc->args, included_code, preproc->file);
+        preproc_info_t *_preproc = preproc_create(preproc->args, included_code, preproc->file);
+        
         preprocess(_preproc);
         preproc_delete(_preproc);
-        free(_preproc);
         // printf_s("%s\n\tEND\n", included_code);
         // printf_s("%s\n", preproc->text);
 

@@ -50,6 +50,9 @@ error_t args_parse(args_t *args, int argc, char **argv)
             if (argv[cur_arg][1] == 'T') {
                 args->flags |= ARGS_FLG_TOKS_PUT;
             } else
+            if (argv[cur_arg][1] == 'A') {
+                args->flags |= ARGS_FLG_AST_PUT;
+            } else
             if (argv[cur_arg][1] == 'c') {
                 args->flags |= ARGS_FLG_OBJ_STOP;
             } else {

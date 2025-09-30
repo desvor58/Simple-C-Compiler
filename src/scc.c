@@ -3,7 +3,7 @@
  *                     by Desvor
  *     (thanks halloweeks for crc32 hash-fuction)
  *
- * This compiler created for the OS x16PRox (by PRoxDev),
+ *  This compiler created for the OS x16PRox (by PRoxDev),
  * for creating your own lightweight compilers on this base
  *           and for learn who C compilers works
  **********************************************************/
@@ -74,39 +74,37 @@ int main(int argc, char **argv)
     get_file_text(infile, code);
     fclose(infile);
 
-    preproc_info_t *preproc = malloc(sizeof(preproc_info_t));
-    preproc_create(preproc, args, code, args.infile_name);
-    preprocess(preproc);
-    preproc_delete(preproc);
-    free(preproc);
-    if (args.flags & ARGS_FLG_PREPROC_STOP) {
-        printf_s("%s\n", code);
-    }
-
-    lexer_info_t *lexer = malloc(sizeof(lexer_info_t));
-    vector_token_t_t *toks = vector_token_t_create();
-    lexer_create(lexer, args, code, toks, args.infile_name);
-    lex_text(lexer);
-
-    if (args.flags & ARGS_FLG_TOKS_PUT) {
-        for (size_t i = 0; i < toks->size; i++) {
-            printf_s("%u:%u %u %s\n", toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
+    /* --- preprocess --- */
+        preproc_info_t *preproc = preproc_create(args, code, args.infile_name);
+        preprocess(preproc);
+        preproc_delete(preproc);
+        if (args.flags & ARGS_FLG_PREPROC_STOP) {
+            printf_s("%s\n", code);
         }
-    }
+    /* ------------------ */
 
-    lexer_delete(lexer);
-    free(lexer);
+    /* --- lexical analis / tokenization --- */
+        vector_token_t_t *toks = vector_token_t_create();
+        lexer_info_t *lexer = lexer_create(args, code, toks, args.infile_name);
+        lex_text(lexer);
+        if (args.flags & ARGS_FLG_TOKS_PUT) {
+            for (size_t i = 0; i < toks->size; i++) {
+                printf_s("%u:%u %u %s\n", toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
+            }
+        }
 
-    parser_info_t *parser = malloc(sizeof(parser_info_t));
-    parser_create(parser, args, toks, args.infile_name);
+        lexer_delete(lexer);
+    /* ------------------------------------- */
 
-    parse(parser);
+    /* --- parsing --- */
+        parser_info_t *parser = parser_create(args, toks, args.infile_name);
+        parse(parser);
+        if (args.flags & ARGS_FLG_AST_PUT) {
+            ast_print(parser->ast_root, 0);
+        }
 
-    // parser_expr_parse(parser, my_toks);
-
-    ast_print(parser->ast_root, 0);
-
-    parser_delete(parser);
+        parser_delete(parser);
+    /* --------------- */
 
     vector_token_t_free(toks);
 

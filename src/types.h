@@ -24,7 +24,8 @@ typedef          double f64;
 #define ARGS_FLG_ASM_STOP     1
 #define ARGS_FLG_PREPROC_STOP 2
 #define ARGS_FLG_TOKS_PUT     4
-#define ARGS_FLG_OBJ_STOP     8
+#define ARGS_FLG_AST_PUT      8
+#define ARGS_FLG_OBJ_STOP     16
 
 typedef struct {
     char infile_name[64];

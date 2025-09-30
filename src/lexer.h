@@ -14,21 +14,24 @@ typedef struct {
     size_t   chpos;
 } lexer_info_t;
 
-void lexer_create(lexer_info_t *lexer, args_t args, char *text, vector_token_t_t *toks, char *file)
+lexer_info_t *lexer_create(args_t args, char *text, vector_token_t_t *toks, char *file)
 {
-    lexer->args     = args;
-    lexer->text     = text;
-    lexer->toks     = toks;
-    lexer->buf      = (char*)malloc(sizeof(char) * MAX_IDENT_SIZE);
-    lexer->pos      = 0;
-    lexer->file     = file;
-    lexer->line     = 1;
-    lexer->chpos    = 0;
+    lexer_info_t *lexer = malloc(sizeof(lexer_info_t));
+    lexer->args         = args;
+    lexer->text         = text;
+    lexer->toks         = toks;
+    lexer->buf          = (char*)malloc(sizeof(char) * MAX_IDENT_SIZE);
+    lexer->pos          = 0;
+    lexer->file         = file;
+    lexer->line         = 1;
+    lexer->chpos        = 0;
+    return lexer;
 }
 
 void lexer_delete(lexer_info_t *lexer)
 {
     free(lexer->buf);
+    free(lexer);
 }
 
 void lexer_alpha_parse(lexer_info_t *lexer);

@@ -4,6 +4,7 @@
         "xiosbase": "c",
         "test_preproc.h": "c",
         "hashmap.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "string.h": "c"
     }
 }
