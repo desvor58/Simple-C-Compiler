@@ -10,6 +10,7 @@
 #include "config.h"
 #include "types/list.h"
 #include "types/vector.h"
+#include "types/string.h"
 
 typedef          char   i8;
 typedef          short  i16;
@@ -289,24 +290,24 @@ void get_folder_path(char *path, char *buf)
     buf[i] = '\0';
 }
 
-void get_file_text(FILE *file, char *buf)
+void get_file_text(FILE *file, string_t *buf)
 {
     char c = ' ';
     int i = 0;
     for (; c != EOF; i++) {
         c = getc(file);
-        buf[i] = c;
+        string_push_back(buf, c);
         if (c == '/') {
             c = getc(file);
             if (c == '/') {
                 while (c != '\n' && c != EOF) {
                     c = getc(file);
                 }
-                buf[i] = '\n';
+                string_push_back(buf, '\n');
             }
         }
     }
-    buf[i] = '\0';
+    string_push_back(buf, '\0');
 }
 
 

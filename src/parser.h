@@ -74,6 +74,13 @@ void parser_parse_bop(parser_info_t *parser, size_t bop_pos, vector_token_t_t *e
     vector_token_t_free(ex2);
 }
 
+static token_type bop_parse_stack[] = {
+    TT_PLUS,
+    TT_MINUS,
+    TT_STAR,
+    TT_SLASH
+};
+
 void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
 {
     // printf_s("parsing this:\n");
@@ -86,32 +93,19 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
     }
     ast_node_t *ast_acc = parser->cur_node;
     
-    size_t i = 0;
-    while (i < expr->size) {
-        if (expr->arr[i].type == TT_PLUS) {
-            parser_parse_bop(parser, i, expr);
-            break;
-        } else
-        if (expr->arr[i].type == TT_MINUS) {
-            parser_parse_bop(parser, i, expr);
-            break;
-        }
-        i++;
-    }
-    if (i == expr->size) {
-        i = 0;
+    size_t bop_type_i = 0;
+    while (bop_type_i < 4) {
+        size_t i = 0;
         while (i < expr->size) {
-            if (expr->arr[i].type == TT_STAR) {
+            if (expr->arr[i].type == bop_parse_stack[bop_type_i]) {
                 parser_parse_bop(parser, i, expr);
-                break;
-            } else
-            if (expr->arr[i].type == TT_SLASH) {
-                parser_parse_bop(parser, i, expr);
-                break;
+                goto bop_parse_end;
             }
             i++;
         }
+        bop_type_i++;
     }
+bop_parse_end:
 
     parser->cur_node = ast_acc;
 }

@@ -16,8 +16,8 @@
 
 #include "types/vector.h"
 
-char   *code;
-args_t  args;
+string_t *code;
+args_t    args;
 
 static vector_error_t_t *err_stk;
 
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 {
     err_stk = vector_error_t_create();
 
-    code = (char*)malloc(MAX_CODE_SIZE);
+    code = string_create();
 
     error_t err = args_parse(&args, argc, argv);
     if (strlen(err.msg)) {
@@ -75,17 +75,17 @@ int main(int argc, char **argv)
     fclose(infile);
 
     /* --- preprocess --- */
-        preproc_info_t *preproc = preproc_create(args, code, args.infile_name);
+        preproc_info_t *preproc = preproc_create(args, code->str, args.infile_name);
         preprocess(preproc);
         preproc_delete(preproc);
         if (args.flags & ARGS_FLG_PREPROC_STOP) {
-            printf_s("%s\n", code);
+            printf_s("%s\n", code->str);
         }
     /* ------------------ */
 
     /* --- lexical analis / tokenization --- */
         vector_token_t_t *toks = vector_token_t_create();
-        lexer_info_t *lexer = lexer_create(args, code, toks, args.infile_name);
+        lexer_info_t *lexer = lexer_create(args, code->str, toks, args.infile_name);
         lex_text(lexer);
         if (args.flags & ARGS_FLG_TOKS_PUT) {
             for (size_t i = 0; i < toks->size; i++) {
@@ -111,6 +111,6 @@ int main(int argc, char **argv)
     check_errs();
 
     free(err_stk);
-    free(code);
+    string_free(code);
     return 0;
 }

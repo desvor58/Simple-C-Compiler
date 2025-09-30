@@ -31,7 +31,7 @@ void vector_##Ty##_push_back(vector_##Ty##_t *vec, Ty val)  \
     if (vec->size + 1 > vec->aloc_size) {  \
         __vector_##Ty##_realoc(vec);  \
     }  \
-    vec->arr[(vec->size)++] = val;  \
+    vec->arr[vec->size++] = val;  \
 }  \
 void vector_##Ty##_free(vector_##Ty##_t *vec)  \
 {  \

@@ -139,18 +139,18 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
                                                         preproc->chpos));
             return;
         }
-        char *included_code = (char*)malloc(MAX_CODE_SIZE);
+        string_t *included_code = string_create();
         get_file_text(included_file, included_code);
         fclose(included_file);
 
-        preproc_info_t *_preproc = preproc_create(preproc->args, included_code, preproc->file);
+        preproc_info_t *_preproc = preproc_create(preproc->args, included_code->str, preproc->file);
         
         preprocess(_preproc);
         preproc_delete(_preproc);
         // printf_s("%s\n\tEND\n", included_code);
         // printf_s("%s\n", preproc->text);
 
-        int err = buf_replace(preproc->text, MAX_CODE_SIZE, start_pos, preproc->pos + 1, included_code);
+        int err = buf_replace(preproc->text, MAX_CODE_SIZE, start_pos, preproc->pos + 1, included_code->str);
         if (err) {
             put_error(gen_error("too large included file",
                                 preproc->file,
@@ -158,9 +158,9 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
                                 preproc->chpos), 1);
         }
 
-        preproc->pos = start_pos + strlen(included_code);
+        preproc->pos = start_pos + strlen(included_code->str);
 
-        free(included_code);
+        string_free(included_code);
     }
 }
 

@@ -5,6 +5,9 @@
         "test_preproc.h": "c",
         "hashmap.h": "c",
         "types.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "vector.h": "c",
+        "parser.h": "c",
+        "lexer.h": "c"
     }
 }
