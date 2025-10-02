@@ -85,6 +85,9 @@ void lex_text(lexer_info_t *lexer)
         if (lexer->text[lexer->pos] == '/') {
             push_tok(TT_SLASH, "/");
         } else
+        if (lexer->text[lexer->pos] == ',') {
+            push_tok(TT_COMA, ",");
+        } else
         if (isalpha(lexer->text[lexer->pos]) || lexer->text[lexer->pos] == '_') {
             lexer_alpha_parse(lexer);
             lexer->pos--;

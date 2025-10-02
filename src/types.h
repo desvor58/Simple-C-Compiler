@@ -32,6 +32,7 @@ typedef struct {
     char infile_name[64];
     char outfile_name[64];
     int  flags;
+    char entry_fun_name[64];
 } args_t;
 
 typedef struct {
@@ -109,6 +110,7 @@ typedef enum {
     TT_INT_LIT,
     TT_FLOAT_LIT,
     TT_STR_LIT,
+    TT_COMA,
     TT_SEMICOLON,
 } token_type;
 
@@ -149,6 +151,14 @@ typedef struct {
     ctype_t type;
     char    name[MAX_IDENT_SIZE];
 } ast_var_info_t;
+
+genlist(ast_var_info_t);
+
+typedef struct {
+    ctype_t                     type;
+    char                        name[MAX_IDENT_SIZE];
+    list_ast_var_info_t_pair_t *params;
+} ast_fun_info_t;
 
 extern struct list_ast_node_t_pair_t;
 

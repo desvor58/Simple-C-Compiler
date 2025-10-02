@@ -11,10 +11,8 @@
 #include "args.h"
 #include "preproc.h"
 #include "lexer.h"
-
 #include "parser.h"
-
-#include "types/vector.h"
+#include "codegen/codegen_x8664_win.h"
 
 string_t *code;
 args_t    args;
@@ -37,14 +35,16 @@ void ast_print(ast_node_t *node, int tab)
     if (node->type == NT_TRANSLATION_UNIT) str = "translation unit";
     if (node->type == NT_VARIABLE_DECL)    str = "var decl";
     if (node->type == NT_EXPR)             str = "expr";
-    if (node->type == NT_INT_LIT)          str = "int";
-    if (node->type == NT_STR_LIT)          str = "str";
+    if (node->type == NT_INT_LIT)          str = "int lit";
+    if (node->type == NT_STR_LIT)          str = "str lit";
     if (node->type == NT_BOP)              str = "bop";
     if (node->type == NT_UOP)              str = "uop";
+    if (node->type == NT_FUNCTION_DECL)    str = "fun decl";
+
     for (int i = 0; i < tab; i++) {
         putchar(' ');
     }
-    printf_s("%s  %s\n", str, (char*)node->info);
+    printf_s("%s  %s  %u\n", str, (char*)node->info, node->info);
     size_t i = 0;
     while (i < list_ast_node_t_size(node->childs)) {
         ast_print(list_ast_node_t_get(node->childs, i), tab + 1);
@@ -102,6 +102,17 @@ int main(int argc, char **argv)
         if (args.flags & ARGS_FLG_AST_PUT) {
             ast_print(parser->ast_root, 0);
         }
+
+        /* --- codegen --- */
+            codegen_x8664_win_info_t *codegen = codegen_x8664_win_create(args, parser->ast_root);
+
+            codegen_x8664_win(codegen);
+            if (args.flags & ARGS_FLG_ASM_STOP) {
+                printf_s("%s\n", codegen->outcode->str);
+            }
+            
+            codegen_x8664_win_delete(codegen);
+        /* --------------- */
 
         parser_delete(parser);
     /* --------------- */

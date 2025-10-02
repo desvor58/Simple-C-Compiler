@@ -104,14 +104,8 @@ int list_##Ty##_free(list_##Ty##_pair_t *start)  \
     if (start == (list_##Ty##_pair_t*)0) {  \
         return 1;  \
     }  \
-    list_##Ty##_pair_t *acc = start->next;  \
-    list_##Ty##_pair_t *cur = start;  \
-    while (cur->next != (list_##Ty##_pair_t*)0) {  \
-        free(cur);  \
-        cur = acc;  \
-        if (!cur->next) acc = cur->next;  \
-    }  \
-    return 0;  \
+    list_##Ty##_free(start->next);  \
+    free(start);  \
 }  \
 
 #endif

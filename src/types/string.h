@@ -36,6 +36,13 @@ void string_push_back(string_t *str, char val)
     str->str[str->size++] = val;
 }
 
+void string_cat(string_t *str, const char *val)
+{
+    for (size_t i = 0; i < strlen(val); i++) {
+        string_push_back(str, val[i]);
+    }
+}
+
 void string_free(string_t *str)
 {
     free(str->str);

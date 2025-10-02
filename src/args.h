@@ -19,6 +19,7 @@ error_t args_parse(args_t *args, int argc, char **argv)
 {
     strcpy(args->infile_name, "");
     strcpy(args->outfile_name, "a.exe");
+    strcpy(args->entry_fun_name, "main");
     args->flags = 0;
 
     for (int cur_arg = 1; cur_arg < argc; cur_arg++) {
@@ -55,6 +56,13 @@ error_t args_parse(args_t *args, int argc, char **argv)
             } else
             if (argv[cur_arg][1] == 'c') {
                 args->flags |= ARGS_FLG_OBJ_STOP;
+            } else
+            if (argv[cur_arg][1] == 'e') {
+                error_t err = args_parse_get_tok(args->entry_fun_name, argc, argv, &cur_arg);
+                if (strlen(err.msg)) {
+                    printf_s("%s", err.msg);
+                    return err;
+                }
             } else {
                 return gen_error("unknow flag name", args->infile_name, 0, 0);
             }

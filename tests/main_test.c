@@ -1,2 +1,9 @@
-int a = 5 / 4 * 2 - 3;
-char b = 2 * 7 + 3;
+int test_var = 17;
+int b = 52;
+
+int main()
+{
+    int g = 5;
+}
+
+char c = 6;
