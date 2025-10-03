@@ -130,7 +130,12 @@ void parser_var_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
         for (size_t i = se_offset + 1; parser->toks->arr[parser->pos + i].type != TT_SEMICOLON; i++) {
             vector_token_t_push_back(expr, parser->toks->arr[parser->pos + i]);
         }
-        parser_expr_parse(parser, expr);
+        if (expr->size == 1) {
+            parser_get_val(parser, expr);
+        } else {
+            parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_EXPR, 0));
+            parser_expr_parse(parser, expr);
+        }
     } else
     if (parser->toks->arr[parser->pos + se_offset].type == TT_SEMICOLON) {
     } else {

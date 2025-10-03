@@ -1,4 +1,4 @@
-int test_var = 17;
+int test_var = 17 * 4 + 4;
 int b = 52;
 
 int main()

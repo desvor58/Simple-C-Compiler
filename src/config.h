@@ -11,16 +11,16 @@
 #define MAX_HASHMAP_KEYS_BUF 1024
 
 #define VERSION "SCC by Desvor v0.0.EBALABA\n"
-#define HELP_MENU                                                                                     \
-    "usage: scc [options] <C code file name>"                                                         \
-    "options:\n"                                                                                      \
-    "    -E                  Stop compiling after preprocessing and put translation unit\n"           \
-    "    -S                  Stop compiling after code-generation and write to a.s generated code\n"  \
-    "    -T                  Stop compiling after tokenization and put the tokens\n"                  \
-    "    -A                  Stop compiling after parsing-optimization and put AST\n"                 \
-    "    -c                  Stop compiling after assembling and do not link\n"                       \
-    "    -o <file>           Put the output into <file>\n"                                            \
-    "    -e <function name>  Set entry function to <function name>"                                   \
-    "    -v                  Put version of prcc\n"                                                   \
+#define HELP_MENU                                                                                  \
+    "usage: scc [options] <C code file name>"                                                      \
+    "options:\n"                                                                                   \
+    "    -E                  Put translation unit after preprocessing\n"                           \
+    "    -S                  Put translation unit after code generation and put it to a.s file\n"  \
+    "    -T                  Put the tokens\n"                                                     \
+    "    -A                  Put AST\n"                                                            \
+    "    -c                  Stop compiling after assembling and do not link\n"                    \
+    "    -o <file>           Put the output into <file>\n"                                         \
+    "    -e <function name>  Set entry function to <function name>"                                \
+    "    -v                  Put version of prcc\n"                                                \
 
 #endif
