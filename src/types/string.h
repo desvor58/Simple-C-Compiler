@@ -28,6 +28,23 @@ void __string_realoc(string_t *str)
     str->str = new_str;
 }
 
+string_t *ztos(int z)
+{
+    string_t *str = malloc(sizeof(string_t));
+    str->str = malloc(sizeof(char) * 512);
+    str->size = 0;
+    str->aloc_size = 512;
+
+    size_t alcnum = (z / 512) + 1;
+
+    for (size_t j = 0; j < alcnum; j++) {
+        __string_realoc(str);
+    }
+    itoa(z, str->str, 10);
+
+    return str;
+}
+
 void string_push_back(string_t *str, char val)
 {
     if (str->size + 1 > str->aloc_size) {
@@ -36,7 +53,7 @@ void string_push_back(string_t *str, char val)
     str->str[str->size++] = val;
 }
 
-void string_cat(string_t *str, const char *val)
+void string_cat(string_t *str, char *val)
 {
     for (size_t i = 0; i < strlen(val); i++) {
         string_push_back(str, val[i]);

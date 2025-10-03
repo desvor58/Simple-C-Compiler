@@ -4,7 +4,12 @@
 #include "../types.h"
 #include "../types/hashmap.h"
 
-genhashmap(size_t);
+typedef struct {
+    size_t rsp_offset;
+    ctype_t type;
+} codegen_loc_var_info_t;
+
+genhashmap(codegen_loc_var_info_t)
 
 typedef struct {
     args_t      args;
@@ -32,14 +37,14 @@ void codegen_x8664_win_delete(codegen_x8664_win_info_t *codegen)
 
 static vector_error_t_t *err_stk;
 
-hashmap_size_t_t *var_offsets;
+hashmap_codegen_loc_var_info_t_t *var_offsets;
 
 void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen);
 void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen);
 
 void codegen_x8664_win(codegen_x8664_win_info_t *codegen)
 {
-    var_offsets = hashmap_size_t_create();
+    var_offsets = hashmap_codegen_loc_var_info_t_create();
 
     string_cat(codegen->outcode, "global ");
     string_cat(codegen->outcode, codegen->args.entry_fun_name);
@@ -62,23 +67,24 @@ void codegen_x8664_win(codegen_x8664_win_info_t *codegen)
     }
 }
 
-const char *codegen_x8664_win_get_type_size(ctype_type ctype)
+size_t codegen_x8664_win_get_type_size(ctype_type ctype)
 {
     if (ctype == CT_CHAR) {
-        return "1";
+        return 1;
     } else
     if (ctype == CT_SHORT) {
-        return "2";
+        return 2;
     } else
     if (ctype == CT_INT) {
-        return "4";
+        return 4;
     } else
     if (ctype == CT_LONG) {
-        return "8";
+        return 8;
     }
+    return 0;
 }
 
-const char *codegen_x8664_win_get_asm_type(ctype_type ctype)
+const char *codegen_x8664_win_get_static_asm_type(ctype_type ctype)
 {
     if (ctype == CT_CHAR) {
         return "db";
@@ -94,15 +100,40 @@ const char *codegen_x8664_win_get_asm_type(ctype_type ctype)
     }
 }
 
+const char *codegen_x8664_win_get_asm_type(ctype_type ctype)
+{
+    if (ctype == CT_CHAR) {
+        return "byte";
+    } else
+    if (ctype == CT_SHORT) {
+        return "word";
+    } else
+    if (ctype == CT_INT) {
+        return "dword";
+    } else
+    if (ctype == CT_LONG) {
+        return "qword";
+    }
+}
+
 void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
 {
     ast_var_info_t *var_info = codegen->cur_node->info;
-
+    string_cat(codegen->outcode, "mov ");
+    string_cat(codegen->outcode, codegen_x8664_win_get_asm_type(var_info->type.type));
+    string_cat(codegen->outcode, " [rbp - ");
+    string_t *offset_str = ztos(codegen->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
+        string_cat(codegen->outcode, offset_str->str);
+    string_free(offset_str);
+    string_cat(codegen->outcode, "], ");
+    string_cat(codegen->outcode, codegen->cur_node->childs[0].val->info);
+    string_cat(codegen->outcode, "\n");
 }
 
 void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen)
 {
-    foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
+    ast_node_t *body = codegen->cur_node;
+    foreach (list_ast_node_t_pair_t, body->childs) {
         codegen->cur_node = cur->val;
         if (cur->val->type == NT_VARIABLE_DECL) {
             codegen_x8664_win_var_decl(codegen);
@@ -118,11 +149,11 @@ void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)
         return;
     }
     string_cat(codegen->outcode, fun_info->name);
-    string_cat(codegen->outcode, ":");
+    string_cat(codegen->outcode, ":\n");
     string_cat(codegen->outcode, "push rbp\n"
                                  "mov rbp, rsp\n");
 
-    // TODO: namespace codegen
+    codegen_x8664_win_namespace_gen(codegen);
 
     string_cat(codegen->outcode, "pop rbp\n"
                                  "ret\n");
@@ -137,7 +168,7 @@ void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen)
     }
     string_cat(codegen->outcode, var_info->name);
     string_cat(codegen->outcode, " ");
-    string_cat(codegen->outcode, codegen_x8664_win_get_asm_type(var_info->type.type));
+    string_cat(codegen->outcode, codegen_x8664_win_get_static_asm_type(var_info->type.type));
     string_cat(codegen->outcode, " ");
     string_cat(codegen->outcode, (char*)codegen->cur_node->childs[0].val->info);
     string_cat(codegen->outcode, "\n");
