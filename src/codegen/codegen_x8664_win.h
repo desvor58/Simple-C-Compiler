@@ -5,13 +5,6 @@
 #include "../types/hashmap.h"
 
 typedef struct {
-    size_t rsp_offset;
-    ctype_t type;
-} codegen_loc_var_info_t;
-
-genhashmap(codegen_loc_var_info_t)
-
-typedef struct {
     args_t      args;
     ast_node_t *ast_root;
     ast_node_t *cur_node;
@@ -37,16 +30,25 @@ void codegen_x8664_win_delete(codegen_x8664_win_info_t *codegen)
 
 static vector_error_t_t *err_stk;
 
-hashmap_codegen_loc_var_info_t_t *var_offsets;
+typedef struct {
+    size_t  rbp_offset;
+    ctype_t type;
+    int     isstatic;
+} codegen_var_info_t;
+
+genhashmap(codegen_var_info_t)
+
+hashmap_codegen_var_info_t_t *var_offsets;
 
 void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen);
 void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen);
+#define putoutcode(fmt, ...) string_cat(codegen->outcode, fmt, __VA_ARGS__)
 
 void codegen_x8664_win(codegen_x8664_win_info_t *codegen)
 {
-    var_offsets = hashmap_codegen_loc_var_info_t_create();
+    var_offsets = hashmap_codegen_var_info_t_create();
 
-    string_cat(codegen->outcode, "global %s\n", codegen->args.entry_fun_name);
+    putoutcode("global %s\n", codegen->args.entry_fun_name);
 
     string_cat(codegen->outcode, "section .data\n");
     foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
@@ -123,29 +125,55 @@ static const char *expr_regs_stack[] = {
     "r9"
 };
 
+void codegen_x8664_win_get_val(codegen_x8664_win_info_t *codegen, ast_node_t *node, char *dst)
+{
+    if (node->type == NT_INT_LIT
+     || node->type == NT_STR_LIT
+    ) {
+        putoutcode("mov %s, %s\n", dst, node->info);
+        return;
+    } else
+    if (node->type == NT_IDENT) {
+        codegen_var_info_t *var_info = hashmap_codegen_var_info_t_get(var_offsets, node->info);
+        if (!var_info) {
+            puts("dfjn");
+            exit(1234);
+        }
+        if (var_info->isstatic) {
+            putoutcode("mov %s, [rel %s]\n", dst, node->info);
+        } else {
+            puts("is local");
+            putoutcode("mov %s, %s [rbp - %u]\n",
+                       dst,
+                       codegen_x8664_win_get_asm_type(var_info->type.type),
+                       var_info->rbp_offset);
+        }
+        return;
+    }
+}
+
 void codegen_x8664_win_expr_gen(codegen_x8664_win_info_t *codegen, ast_node_t *root, size_t reg_num)
 {
-    if (root->type == NT_INT_LIT
-     || root->type == NT_STR_LIT
-    ) {
-        string_cat(codegen->outcode, "mov %s, %s\n", expr_regs_stack[reg_num], root->info);
-        return;
+    if (root->type == NT_IDENT
+     || root->type == NT_INT_LIT
+     || root->type == NT_STR_LIT) {
+        codegen_x8664_win_get_val(codegen, root, expr_regs_stack[reg_num]);
     }
     if (root->type == NT_BOP) {
         codegen_x8664_win_expr_gen(codegen, root->childs->val, reg_num);
         codegen_x8664_win_expr_gen(codegen, list_ast_node_t_get(root->childs, 1), reg_num + 1);
 
         if (!strcmp(root->info, "*")) {
-            string_cat(codegen->outcode, "imul %s, %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
+            putoutcode("imul %s, %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
         }
         if (!strcmp(root->info, "/")) {
-            string_cat(codegen->outcode, "idiv %s, %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
+            putoutcode("idiv %s, %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
         }
         if (!strcmp(root->info, "+")) {
-            string_cat(codegen->outcode, "add %s, %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
+            putoutcode("add %s, %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
         }
         if (!strcmp(root->info, "-")) {
-            string_cat(codegen->outcode, "sub %s, %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
+            putoutcode("sub %s, %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
         }
     }
 }
@@ -153,6 +181,11 @@ void codegen_x8664_win_expr_gen(codegen_x8664_win_info_t *codegen, ast_node_t *r
 void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
 {
     ast_var_info_t *var_info = codegen->cur_node->info;
+    codegen_var_info_t *cginfo = malloc(sizeof(codegen_var_info_t));
+    cginfo->rbp_offset = codegen->locvar_offset + codegen_x8664_win_get_type_size(var_info->type.type);
+    cginfo->isstatic = 0;
+    cginfo->type = var_info->type;
+    hashmap_codegen_var_info_t_set(var_offsets, var_info->name, cginfo);
     if (codegen->cur_node->childs->val->type == NT_EXPR) {
         codegen_x8664_win_expr_gen(codegen, codegen->cur_node->childs->val->childs->val, 0);
         string_cat(codegen->outcode, "mov %s [rbp - %u], rax\n",
@@ -160,10 +193,12 @@ void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
                                      codegen->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
         return;
     }
-    string_cat(codegen->outcode, "mov %s [rbp - %u], %s\n",
-                                 codegen_x8664_win_get_asm_type(var_info->type.type),
-                                 codegen->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type),
-                                 codegen->cur_node->childs->val->info);
+    string_t *dst_str = string_create();
+    string_cat(dst_str, "%s [rbp - %u]",
+                        codegen_x8664_win_get_asm_type(var_info->type.type),
+                        codegen->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
+    codegen_x8664_win_get_val(codegen, codegen->cur_node->childs->val, dst_str->str);
+    string_free(dst_str);
 }
 
 void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen)
@@ -197,6 +232,11 @@ void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)
 void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen)
 {
     ast_var_info_t *var_info = (ast_var_info_t*)codegen->cur_node->info;
+    codegen_var_info_t *cginfo = malloc(sizeof(codegen_var_info_t));
+    cginfo->rbp_offset = 0;
+    cginfo->isstatic = 1;
+    cginfo->type = var_info->type;
+    hashmap_codegen_var_info_t_set(var_offsets, var_info->name, cginfo);
     if (!var_info) {
         vector_error_t_push_back(err_stk, gen_error("var declaration node havent ast_var_info", codegen->args.infile_name, 0, 0));
         return;

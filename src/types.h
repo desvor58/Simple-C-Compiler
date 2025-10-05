@@ -144,6 +144,7 @@ typedef enum {
     NT_INT_LIT,
     NT_STR_LIT,
     NT_FLOAT_LIT,
+    NT_IDENT,
     NT_FUNCTION_CALL,
 } ast_node_type;
 

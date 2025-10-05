@@ -37,6 +37,7 @@ void ast_print(ast_node_t *node, int tab)
     if (node->type == NT_EXPR)             str = "expr";
     if (node->type == NT_INT_LIT)          str = "int lit";
     if (node->type == NT_STR_LIT)          str = "str lit";
+    if (node->type == NT_IDENT)            str = "ident";
     if (node->type == NT_BOP)              str = "bop";
     if (node->type == NT_UOP)              str = "uop";
     if (node->type == NT_FUNCTION_DECL)    str = "fun decl";

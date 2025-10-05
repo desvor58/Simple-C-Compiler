@@ -57,6 +57,9 @@ void parser_get_val(parser_info_t *parser, vector_token_t_t *expr)
     } else
     if (expr->arr[0].type == TT_STR_LIT) {
         ast_node_add_child(parser->cur_node, gen_ast_node(NT_STR_LIT, stralc(expr->arr[0].val)));
+    } else
+    if (expr->arr[0].type == TT_IDENT) {
+        ast_node_add_child(parser->cur_node, gen_ast_node(NT_IDENT, stralc(expr->arr[0].val)));
     } else {
         exit(76);
     }
