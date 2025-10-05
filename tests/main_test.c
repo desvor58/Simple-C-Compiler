@@ -1,11 +1,6 @@
-int test_var = 17;
-int b = 52;
+int global_var = 17;
 
 int main()
 {
-    int i = 5;
-    char j = 25;
-    long k = 8;
+    int local_var = 5 * 3 - 1 * 8;
 }
-
-char c = 6;

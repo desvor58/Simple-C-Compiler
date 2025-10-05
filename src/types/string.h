@@ -1,6 +1,7 @@
 #ifndef STRING_H
 
 #include <malloc.h>
+#include <stdarg.h>
 
 typedef struct
 {
@@ -53,11 +54,18 @@ void string_push_back(string_t *str, char val)
     str->str[str->size++] = val;
 }
 
-void string_cat(string_t *str, char *val)
+void string_cat(string_t *str, char *fmt, ...)
 {
-    for (size_t i = 0; i < strlen(val); i++) {
-        string_push_back(str, val[i]);
+    char *buf = malloc(16*1024);
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, 16*1024, fmt, args);
+    va_end(args);
+
+    for (size_t i = 0; i < strlen(buf); i++) {
+        string_push_back(str, buf[i]);
     }
+    free(buf);
 }
 
 void string_free(string_t *str)

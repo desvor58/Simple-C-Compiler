@@ -9,6 +9,7 @@
         "vector.h": "c",
         "parser.h": "c",
         "lexer.h": "c",
-        "malloc.h": "c"
+        "malloc.h": "c",
+        "args.h": "c"
     }
 }
