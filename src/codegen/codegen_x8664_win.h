@@ -142,7 +142,6 @@ void codegen_x8664_win_get_val(codegen_x8664_win_info_t *codegen, ast_node_t *no
         if (var_info->isstatic) {
             putoutcode("mov %s, [rel %s]\n", dst, node->info);
         } else {
-            puts("is local");
             putoutcode("mov %s, %s [rbp - %u]\n",
                        dst,
                        codegen_x8664_win_get_asm_type(var_info->type.type),

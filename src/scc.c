@@ -109,7 +109,10 @@ int main(int argc, char **argv)
 
             codegen_x8664_win(codegen);
             if (args.flags & ARGS_FLG_ASM_STOP) {
-                printf_s("%s\n", codegen->outcode->str);
+                FILE *sfile;
+                fopen_s(&sfile, "a.s", "w");
+                fprintf_s(sfile, "%s", codegen->outcode->str);
+                fclose(sfile);
             }
             
             codegen_x8664_win_delete(codegen);
@@ -119,6 +122,7 @@ int main(int argc, char **argv)
     /* --------------- */
 
     vector_token_t_free(toks);
+
 
     check_errs();
 
