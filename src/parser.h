@@ -45,6 +45,14 @@ void parser_namespace_parse(parser_info_t *parser, size_t start, size_t end)
     for (parser->pos = start; parser->pos < end; parser->pos++) {
         if (parser->toks->arr[parser->pos].type == TT_TYPE_NAME) {
             parser_decl_parse(parser);
+        } else {
+            vector_token_t_t *expr = vector_token_t_create();
+            while (parser->toks->arr[parser->pos].type != TT_SEMICOLON) {
+                vector_token_t_push_back(expr, parser->toks->arr[parser->pos]);
+                parser->pos++;
+            }
+            parser_expr_parse(parser, expr);
+            vector_token_t_free(expr);
         }
     }
 }
@@ -84,7 +92,8 @@ void parser_parse_bop(parser_info_t *parser, size_t bop_pos, vector_token_t_t *e
     vector_token_t_free(ex2);
 }
 
-static token_type bop_parse_stack[] = {
+static token_type op_parse_stack[] = {
+    TT_EQ,
     TT_PLUS,
     TT_MINUS,
     TT_STAR,
@@ -107,7 +116,7 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
     while (bop_type_i < 4) {
         size_t i = 0;
         while (i < expr->size) {
-            if (expr->arr[i].type == bop_parse_stack[bop_type_i]) {
+            if (expr->arr[i].type == op_parse_stack[bop_type_i]) {
                 parser_parse_bop(parser, i, expr);
                 goto bop_parse_end;
             }
@@ -273,6 +282,7 @@ void parser_decl_parse(parser_info_t *parser)
         return;
     }
     parser_var_decl_parse(parser, ident_offset, se_offset, type, ident);
+    while (parser->toks->arr[++parser->pos].type != TT_SEMICOLON) {}
 }
 
 #endif

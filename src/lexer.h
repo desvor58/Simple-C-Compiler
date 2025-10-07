@@ -35,7 +35,7 @@ void lexer_delete(lexer_info_t *lexer)
 }
 
 void lexer_alpha_parse(lexer_info_t *lexer);
-void lexer_digit_parse(lexer_info_t *lexer);
+void lexer_digit_parse(lexer_info_t *lexer, size_t offset);
 void lexer_buf_analis(lexer_info_t *lexer);
 
 #define push_tok(type, val) vector_token_t_push_back(lexer->toks, gen_token(type, val, lexer->line, lexer->chpos))
@@ -77,6 +77,18 @@ void lex_text(lexer_info_t *lexer)
             push_tok(TT_PLUS, "+");
         } else
         if (lexer->text[lexer->pos] == '-') {
+            if (lexer->toks->arr[lexer->toks->size - 1].type != TT_IDENT
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_INT_LIT
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_STR_LIT
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_FLOAT_LIT) {
+                lexer->buf[0] = '-';
+                while (lexer->text[++lexer->pos] == ' ') {}
+                if (isdigit(lexer->text[lexer->pos])) {
+                    lexer_digit_parse(lexer, 1);
+                    lexer->pos--;
+                }
+                continue;
+            }
             push_tok(TT_MINUS, "-");
         } else
         if (lexer->text[lexer->pos] == '*') {
@@ -93,7 +105,7 @@ void lex_text(lexer_info_t *lexer)
             lexer->pos--;
         } else
         if (isdigit(lexer->text[lexer->pos])) {
-            lexer_digit_parse(lexer);
+            lexer_digit_parse(lexer, 0);
             lexer->pos--;
         }
     }
@@ -127,9 +139,9 @@ void lexer_buf_analis(lexer_info_t *lexer)
     }
 }
 
-void lexer_digit_parse(lexer_info_t *lexer)
+void lexer_digit_parse(lexer_info_t *lexer, size_t offset)
 {
-    size_t i = 0;
+    size_t i = offset;
     while (isdigit(lexer->text[lexer->pos])) {
         lexer->buf[i++] = lexer->text[lexer->pos++];
     }

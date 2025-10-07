@@ -10,6 +10,9 @@
         "parser.h": "c",
         "lexer.h": "c",
         "malloc.h": "c",
-        "args.h": "c"
+        "args.h": "c",
+        "codegen_x8664_win.h": "c",
+        "preproc.h": "c",
+        "stdlib.h": "c"
     }
 }

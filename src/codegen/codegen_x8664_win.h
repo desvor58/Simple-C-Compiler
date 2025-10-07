@@ -151,6 +151,20 @@ void codegen_x8664_win_get_val(codegen_x8664_win_info_t *codegen, ast_node_t *no
     }
 }
 
+void codegen_x8664_win_eql_expr_gen(codegen_x8664_win_info_t *codegen, ast_node_t *root, size_t reg_num)
+{
+    if (root->type == NT_IDENT) {
+        codegen_var_info_t *var_info = hashmap_codegen_var_info_t_get(var_offsets, root->info);
+        if (var_info->isstatic) {
+            putoutcode("mov %s, %s\n", expr_regs_stack[reg_num], root->info);
+        } else {
+            putoutcode("mov %s, rbp - %u\n", expr_regs_stack[reg_num], var_info->rbp_offset);
+        }
+    } else {
+        exit(5);
+    }
+}
+
 void codegen_x8664_win_expr_gen(codegen_x8664_win_info_t *codegen, ast_node_t *root, size_t reg_num)
 {
     if (root->type == NT_IDENT
@@ -159,6 +173,16 @@ void codegen_x8664_win_expr_gen(codegen_x8664_win_info_t *codegen, ast_node_t *r
         codegen_x8664_win_get_val(codegen, root, expr_regs_stack[reg_num]);
     }
     if (root->type == NT_BOP) {
+        if (!strcmp(root->info, "=")) {
+            if (root->childs->val->type != NT_IDENT) {
+                exit(8);
+            }
+            codegen_x8664_win_eql_expr_gen(codegen, root->childs->val, reg_num);
+            codegen_x8664_win_expr_gen(codegen, list_ast_node_t_get(root->childs, 1), reg_num + 1);
+
+            putoutcode("mov [%s], %s\n", expr_regs_stack[reg_num], expr_regs_stack[reg_num + 1]);
+            return;
+        }
         codegen_x8664_win_expr_gen(codegen, root->childs->val, reg_num);
         codegen_x8664_win_expr_gen(codegen, list_ast_node_t_get(root->childs, 1), reg_num + 1);
 
@@ -207,6 +231,8 @@ void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen)
         codegen->cur_node = cur->val;
         if (cur->val->type == NT_VARIABLE_DECL) {
             codegen_x8664_win_var_decl(codegen);
+        } else {
+            codegen_x8664_win_expr_gen(codegen, cur->val, 0);
         }
     }
 }
