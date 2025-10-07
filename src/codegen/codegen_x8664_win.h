@@ -5,11 +5,17 @@
 #include "../types/hashmap.h"
 
 typedef struct {
-    args_t      args;
-    ast_node_t *ast_root;
-    ast_node_t *cur_node;
-    string_t   *outcode;
-    size_t      locvar_offset;
+    size_t locvar_offset;
+} codegen_namespace_info_t;
+
+genlist(codegen_namespace_info_t);
+
+typedef struct {
+    args_t                                args;
+    ast_node_t                           *ast_root;
+    ast_node_t                           *cur_node;
+    string_t                             *outcode;
+    list_codegen_namespace_info_t_pair_t *namespaces;
 } codegen_x8664_win_info_t;
 
 codegen_x8664_win_info_t *codegen_x8664_win_create(args_t args, ast_node_t *ast)
@@ -19,12 +25,19 @@ codegen_x8664_win_info_t *codegen_x8664_win_create(args_t args, ast_node_t *ast)
     codegen->ast_root = ast;
     codegen->cur_node = ast;
     codegen->outcode = string_create();
-    codegen->locvar_offset = 0;
+    codegen->namespaces = list_codegen_namespace_info_t_create();
+    codegen_namespace_info_t *global_namespace = malloc(sizeof(codegen_namespace_info_t));
+    global_namespace->locvar_offset = 0;
+    list_codegen_namespace_info_t_add(codegen->namespaces, global_namespace);
     return codegen;
 }
 
 void codegen_x8664_win_delete(codegen_x8664_win_info_t *codegen)
 {
+    foreach (list_codegen_namespace_info_t_pair_t, codegen->namespaces) {
+        free(cur->val);
+    }
+    list_codegen_namespace_info_t_free(codegen->namespaces);
     string_free(codegen->outcode);
 }
 
@@ -205,7 +218,7 @@ void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
 {
     ast_var_info_t *var_info = codegen->cur_node->info;
     codegen_var_info_t *cginfo = malloc(sizeof(codegen_var_info_t));
-    cginfo->rbp_offset = codegen->locvar_offset + codegen_x8664_win_get_type_size(var_info->type.type);
+    cginfo->rbp_offset = codegen->namespaces->val->locvar_offset + codegen_x8664_win_get_type_size(var_info->type.type);
     cginfo->isstatic = 0;
     cginfo->type = var_info->type;
     hashmap_codegen_var_info_t_set(var_offsets, var_info->name, cginfo);
@@ -213,13 +226,13 @@ void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
         codegen_x8664_win_expr_gen(codegen, codegen->cur_node->childs->val->childs->val, 0);
         string_cat(codegen->outcode, "mov %s [rbp - %u], rax\n",
                                      codegen_x8664_win_get_asm_type(var_info->type.type),
-                                     codegen->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
+                                     codegen->namespaces->val->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
         return;
     }
     string_t *dst_str = string_create();
     string_cat(dst_str, "%s [rbp - %u]",
                         codegen_x8664_win_get_asm_type(var_info->type.type),
-                        codegen->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
+                        codegen->namespaces->val->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
     codegen_x8664_win_get_val(codegen, codegen->cur_node->childs->val, dst_str->str);
     string_free(dst_str);
 }
@@ -227,6 +240,12 @@ void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
 void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen)
 {
     ast_node_t *body = codegen->cur_node;
+    codegen_namespace_info_t *namespace = malloc(sizeof(codegen_namespace_info_t));
+    namespace->locvar_offset = 0;
+    list_codegen_namespace_info_t_pair_t *new_namespace_list = list_codegen_namespace_info_t_create();
+    new_namespace_list->val = namespace;
+    new_namespace_list->next = codegen->namespaces;
+    codegen->namespaces = new_namespace_list;
     foreach (list_ast_node_t_pair_t, body->childs) {
         codegen->cur_node = cur->val;
         if (cur->val->type == NT_VARIABLE_DECL) {
@@ -235,6 +254,9 @@ void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen)
             codegen_x8664_win_expr_gen(codegen, cur->val, 0);
         }
     }
+    codegen->namespaces = codegen->namespaces->next;
+    free(new_namespace_list);
+    free(namespace);
 }
 
 void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)

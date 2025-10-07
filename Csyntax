@@ -1,0 +1,12 @@
+programm         -> <var_decl> & <fun_decl>
+var_decl         -> [<storage_modifire>] <type> <ident> [ = <expr> ] ;
+storage_modifire -> static | register
+type             -> [<type_modifire>] char | short | int | long
+type_modifire    -> const | unsigned | signed | struct
+expr             -> <lit> | <ident> | <ident>(<params>) | <expr> <bop> <expr> | <uop> <expr>
+fun_decl         -> [<storage_modifire>] <type> <ident>(<type1> <ident1>, <typeN> <identN>) <body>
+body             -> { <expr>; | <statement> }
+statement        -> <if_statement> | <while_statement> | <for_statement>
+if_statement     -> if (<expr>) <body> [else <if_statement> | else <body>]
+while_statement  -> while (<expr>) <body>
+for_statement    -> for (<expr>; <expr>; <expr>) <body>
