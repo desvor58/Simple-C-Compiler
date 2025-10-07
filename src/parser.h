@@ -57,6 +57,60 @@ void parser_namespace_parse(parser_info_t *parser, size_t start, size_t end)
     }
 }
 
+ctype_t parser_type_parse(parser_info_t *parser, vector_token_t_t *type_slice, size_t ident_offset)
+{
+    ctype_t type = {0};
+    type.modifires_top = 0;
+    if (type_slice->arr[0].type != TT_TYPE_NAME) {
+        vector_error_t_push_back(err_stk, gen_error("Expected type name",
+                                                    parser->args.infile_name,
+                                                    type_slice->arr[0].line_ref,
+                                                    type_slice->arr[0].chpos_ref));
+        return (ctype_t){0};
+    }
+
+    size_t i = ident_offset + 1;
+    while (i < type_slice->size) {
+        if (type_slice->arr[i].type == TT_LSQUARE_BRACKET
+         && type_slice->arr[i + 1].type == TT_RSQUARE_BRACKET) {
+            type.modifires[type.modifires_top++] = CTM_ARRAY;
+        }
+        i++;
+    }
+
+    i = 0;
+    while (i < ident_offset) {
+        if (!strcmp(type_slice->arr[i].val, "unsigned")) {
+            type.modifires[type.modifires_top++] = CTM_UNSIGNED;
+        } else
+        if (!strcmp(type_slice->arr[i].val, "static")) {
+            type.modifires[type.modifires_top++] = CTM_STATIC;
+        } else
+        if (!strcmp(type_slice->arr[i].val, "const")) {
+            type.modifires[type.modifires_top++] = CTM_CONST;
+        } else
+        if (!strcmp(type_slice->arr[i].val, "*")) {
+            type.modifires[type.modifires_top++] = CTM_POINTER;
+        } else {
+            if (!strcmp(type_slice->arr[i].val, "char")) {
+                type.type = CT_CHAR;
+            } else
+            if (!strcmp(type_slice->arr[i].val, "short")) {
+                type.type = CT_SHORT;
+            } else
+            if (!strcmp(type_slice->arr[i].val, "int")) {
+                type.type = CT_INT;
+            } else
+            if (!strcmp(type_slice->arr[i].val, "long")) {
+                type.type = CT_LONG;
+            }
+        }
+        i++;
+    }
+
+    return type;
+}
+
 void parser_get_val(parser_info_t *parser, vector_token_t_t *expr)
 {
     // puts("in num!");
@@ -159,6 +213,24 @@ void parser_var_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
     parser->cur_node = ast_acc;
 }
 
+void parser_fun_args_parse(parser_info_t *parser, size_t args_offset)
+{
+    if (parser->toks->arr[parser->pos + args_offset].type != TT_TYPE_NAME) {
+        vector_error_t_push_back(err_stk, gen_error("Expected type name",
+                                                    parser->args.infile_name,
+                                                    parser->toks->arr[parser->pos + args_offset].line_ref,
+                                                    parser->toks->arr[parser->pos + args_offset].chpos_ref));
+        return;
+    }
+    if (parser->toks->arr[parser->pos + args_offset].type != TT_IDENT) {
+        vector_error_t_push_back(err_stk, gen_error("Expected type name",
+                                                    parser->args.infile_name,
+                                                    parser->toks->arr[parser->pos + args_offset].line_ref,
+                                                    parser->toks->arr[parser->pos + args_offset].chpos_ref));
+        return;
+    }
+}
+
 void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se_offset, ctype_t type, token_t ident)
 {
     ast_node_t *ast_acc = parser->cur_node;
@@ -168,12 +240,10 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
     strcpy(fun_info->name, ident.val);
     fun_info->params = list_ast_var_info_t_create();
 
+    for (size_t i = 1; parser->toks->arr[parser->pos + se_offset + i].type != TT_RPARENT; i++) {
+
+    }
     parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_FUNCTION_DECL, (void*)fun_info));
-    
-    // for (int i = 1; parser->toks->arr[parser->pos + se_offset + i].type != TT_RPARENT; i++) {
-    //     if (parser->toks->arr[parser->pos + se_offset + i].type == TT_TYPE_NAME) {
-    //     }
-    // }
 
     if (parser->toks->arr[parser->pos + se_offset + 1].type != TT_RPARENT) {
         puts("EBALABALA KUKAREKU TAM TUDA SUDA ERROR KOROCHE");
@@ -202,8 +272,10 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
 
 void parser_decl_parse(parser_info_t *parser)
 {
-    size_t ident_offset = 1;
+    vector_token_t_t *type_slice = vector_token_t_create();
+    size_t ident_offset = 0;
     while (parser->toks->arr[parser->pos + ident_offset].type != TT_IDENT) {
+        vector_token_t_push_back(type_slice, parser->toks->arr[parser->pos + ident_offset]);
         if (parser->pos + ++ident_offset == parser->toks->size) {
             vector_error_t_push_back(err_stk, gen_error("expected identifire",
                                                         parser->args.infile_name,
@@ -213,69 +285,18 @@ void parser_decl_parse(parser_info_t *parser)
         }
     }
     token_t ident = parser->toks->arr[parser->pos + ident_offset];
-    ctype_t type = {0};
-    type.modifires_top = 0;
-    if (!strcmp(parser->toks->arr[parser->pos].val, "char")) {
-        type.type = CT_CHAR;
-    } else
-    if (!strcmp(parser->toks->arr[parser->pos].val, "short")) {
-        type.type = CT_SHORT;
-    } else
-    if (!strcmp(parser->toks->arr[parser->pos].val, "int")) {
-        type.type = CT_INT;
-    } else
-    if (!strcmp(parser->toks->arr[parser->pos].val, "long")) {
-        type.type = CT_LONG;
-    }
+    vector_token_t_push_back(type_slice, parser->toks->arr[parser->pos + ident_offset]);
+
     size_t se_offset = ident_offset + 1;
     while (parser->toks->arr[parser->pos + se_offset].type != TT_EQ
         && parser->toks->arr[parser->pos + se_offset].type != TT_LPARENT
     ) {
-        if (parser->toks->arr[parser->pos + se_offset].type == TT_LSQUARE_BRACKET) {
-            if (parser->toks->arr[parser->pos + se_offset + 1].type == TT_RSQUARE_BRACKET) {
-                type.modifires[type.modifires_top++] = CTM_ARRAY;
-            } else {
-                vector_error_t_push_back(err_stk, gen_error("expected right bracket",
-                                                            parser->args.infile_name,
-                                                            parser->toks->arr[parser->pos + 1].line_ref,
-                                                            parser->toks->arr[parser->pos + 1].chpos_ref));
-            }
-        } else {
-            vector_error_t_push_back(err_stk, gen_error("unknow type modifire",
-                                                        parser->args.infile_name,
-                                                        parser->toks->arr[parser->pos + 1].line_ref,
-                                                        parser->toks->arr[parser->pos + 1].chpos_ref));
-        }
+        vector_token_t_push_back(type_slice, parser->toks->arr[parser->pos + se_offset]);
         se_offset++;
     }
-    size_t i = -1;
-    while (parser->toks->arr[parser->pos + ident_offset + i].type != TT_TYPE_NAME) {
-        if (parser->toks->arr[parser->pos + ident_offset + i].type == TT_STAR) {
-            type.modifires[type.modifires_top++] = CTM_POINTER;
-        } else
-        if (parser->toks->arr[parser->pos + ident_offset + i].type == TT_TYPE_NAME) {
-            if (!strcmp(parser->toks->arr[parser->pos + ident_offset + i].val, "const")) {
-                type.modifires[type.modifires_top++] = CTM_CONST;
-            } else
-            if (!strcmp(parser->toks->arr[parser->pos + ident_offset + i].val, "static")) {
-                type.modifires[type.modifires_top++] = CTM_STATIC;
-            } else
-            if (!strcmp(parser->toks->arr[parser->pos + ident_offset + i].val, "unsigned")) {
-                type.modifires[type.modifires_top++] = CTM_UNSIGNED;
-            } else {
-                vector_error_t_push_back(err_stk, gen_error("unknow type modifire",
-                                                            parser->args.infile_name,
-                                                            parser->toks->arr[parser->pos + 1].line_ref,
-                                                            parser->toks->arr[parser->pos + 1].chpos_ref));
-            }
-        } else {
-            vector_error_t_push_back(err_stk, gen_error("unknow type modifire",
-                                                        parser->args.infile_name,
-                                                        parser->toks->arr[parser->pos + 1].line_ref,
-                                                        parser->toks->arr[parser->pos + 1].chpos_ref));
-        }
-        i--;
-    }
+
+    ctype_t type = parser_type_parse(parser, type_slice, ident_offset);
+    vector_token_t_free(type_slice);
 
     if (parser->toks->arr[parser->pos + se_offset].type == TT_LPARENT) {
         parser_fun_decl_parse(parser, ident_offset, se_offset, type, ident);
