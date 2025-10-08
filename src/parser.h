@@ -213,24 +213,6 @@ void parser_var_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
     parser->cur_node = ast_acc;
 }
 
-void parser_fun_args_parse(parser_info_t *parser, size_t args_offset)
-{
-    if (parser->toks->arr[parser->pos + args_offset].type != TT_TYPE_NAME) {
-        vector_error_t_push_back(err_stk, gen_error("Expected type name",
-                                                    parser->args.infile_name,
-                                                    parser->toks->arr[parser->pos + args_offset].line_ref,
-                                                    parser->toks->arr[parser->pos + args_offset].chpos_ref));
-        return;
-    }
-    if (parser->toks->arr[parser->pos + args_offset].type != TT_IDENT) {
-        vector_error_t_push_back(err_stk, gen_error("Expected type name",
-                                                    parser->args.infile_name,
-                                                    parser->toks->arr[parser->pos + args_offset].line_ref,
-                                                    parser->toks->arr[parser->pos + args_offset].chpos_ref));
-        return;
-    }
-}
-
 void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se_offset, ctype_t type, token_t ident)
 {
     ast_node_t *ast_acc = parser->cur_node;
@@ -240,23 +222,46 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
     strcpy(fun_info->name, ident.val);
     fun_info->params = list_ast_var_info_t_create();
 
-    for (size_t i = 1; parser->toks->arr[parser->pos + se_offset + i].type != TT_RPARENT; i++) {
+    size_t rparent_offset = se_offset + 1;
+    while (parser->toks->arr[parser->pos + rparent_offset].type != TT_RPARENT) {
+        if (parser->toks->arr[parser->pos + rparent_offset].type != TT_TYPE_NAME) {
+            vector_error_t_push_back(err_stk, gen_error("Expected argument type",
+                                                        parser->args.infile_name,
+                                                        parser->toks->arr[parser->pos + rparent_offset].line_ref,
+                                                        parser->toks->arr[parser->pos + rparent_offset].chpos_ref));
+            return;
+        }
+        vector_token_t_t *arg_slice = vector_token_t_create();
+        size_t arg_ident_offset = rparent_offset;
+        while (parser->toks->arr[parser->pos + rparent_offset].type != TT_COMA
+            && parser->toks->arr[parser->pos + rparent_offset].type != TT_RPARENT
+        ) {
+            if (parser->toks->arr[parser->pos + rparent_offset].type != TT_IDENT) {
+                arg_ident_offset = rparent_offset - arg_ident_offset + 1;
+            }
+            vector_token_t_push_back(arg_slice, parser->toks->arr[parser->pos + rparent_offset]);
+            rparent_offset++;
+        }
+        ast_var_info_t *arg_info = malloc(sizeof(ast_var_info_t));
+        arg_info->type = parser_type_parse(parser, arg_slice, arg_ident_offset);
+        strcpy(arg_info->name, arg_slice->arr[arg_ident_offset].val);
+        list_ast_var_info_t_add(fun_info->params, arg_info);
 
+        if (parser->toks->arr[parser->pos + rparent_offset].type == TT_RPARENT) {
+            break;
+        }
+        rparent_offset++;
     }
     parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_FUNCTION_DECL, (void*)fun_info));
 
-    if (parser->toks->arr[parser->pos + se_offset + 1].type != TT_RPARENT) {
-        puts("EBALABALA KUKAREKU TAM TUDA SUDA ERROR KOROCHE");
-    }
-
-    if (parser->toks->arr[parser->pos + se_offset + 2].type == TT_LBRACKET) {
+    if (parser->toks->arr[parser->pos + rparent_offset + 1].type == TT_LBRACKET) {
         size_t skip_rb = 0;
-        size_t i = 3;
+        size_t i = rparent_offset + 2;
         for (;;i++) {
-            if (parser->toks->arr[parser->pos + se_offset + i].type == TT_LBRACKET) {
+            if (parser->toks->arr[parser->pos + i].type == TT_LBRACKET) {
                 skip_rb++;
             }
-            if (parser->toks->arr[parser->pos + se_offset + i].type == TT_RBRACKET) {
+            if (parser->toks->arr[parser->pos + i].type == TT_RBRACKET) {
                 if (skip_rb) {
                     skip_rb--;
                     continue;
@@ -264,7 +269,7 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
                 break;
             }
         }
-        parser_namespace_parse(parser, parser->pos + se_offset + 3, parser->pos + se_offset + i);
+        parser_namespace_parse(parser, parser->pos + rparent_offset + 2, parser->pos + i);
     }
 
     parser->cur_node = ast_acc;

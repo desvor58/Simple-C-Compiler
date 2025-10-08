@@ -1,6 +1,6 @@
 int global_var = 17;
 
-int foo()
+int foo(int a, int b)
 {
     int local_var = 6;
     int lv = local_var;
