@@ -15,6 +15,7 @@ typedef struct {
     ast_node_t                           *ast_root;
     ast_node_t                           *cur_node;
     string_t                             *outcode;
+    size_t                                outcode_offset;
     list_codegen_namespace_info_t_pair_t *namespaces;
 } codegen_x8664_win_info_t;
 
@@ -25,6 +26,7 @@ codegen_x8664_win_info_t *codegen_x8664_win_create(args_t args, ast_node_t *ast)
     codegen->ast_root = ast;
     codegen->cur_node = ast;
     codegen->outcode = string_create();
+    codegen->outcode_offset = 0;
     codegen->namespaces = list_codegen_namespace_info_t_create();
     codegen_namespace_info_t *global_namespace = malloc(sizeof(codegen_namespace_info_t));
     global_namespace->locvar_offset = 0;
@@ -55,29 +57,38 @@ hashmap_codegen_var_info_t_t *var_offsets;
 
 void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen);
 void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen);
-#define putoutcode(fmt, ...) string_cat(codegen->outcode, fmt, __VA_ARGS__)
+
+#define putoutcode(fmt, ...)  \
+    for (size_t outcode_offset_counter = 0; outcode_offset_counter < codegen->outcode_offset; outcode_offset_counter++)  \
+        string_cat(codegen->outcode, "    ");  \
+    string_cat(codegen->outcode, fmt, __VA_ARGS__)
 
 void codegen_x8664_win(codegen_x8664_win_info_t *codegen)
 {
     var_offsets = hashmap_codegen_var_info_t_create();
 
-    putoutcode("bits 64\nglobal %s\n", codegen->args.entry_fun_name);
+    putoutcode("bits 64\n\nglobal %s\n\n", codegen->args.entry_fun_name);
 
-    string_cat(codegen->outcode, "section .data\n");
+    putoutcode("section .data\n", 0);
+    codegen->outcode_offset++;
     foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
         codegen->cur_node = cur->val;
         if (cur->val->type == NT_VARIABLE_DECL) {
             codegen_x8664_win_static_var_decl(codegen);
         }
     }
+    codegen->outcode_offset--;
 
-    string_cat(codegen->outcode, "section .text\n");
+    putoutcode("\nsection .text\n", 0);
+    codegen->outcode_offset++;
+
     foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
         codegen->cur_node = cur->val;
         if (cur->val->type == NT_FUNCTION_DECL) {
             codegen_x8664_win_fun_decl(codegen);
         }
     }
+    codegen->outcode_offset--;
 }
 
 size_t codegen_x8664_win_get_type_size(ctype_type ctype)
@@ -226,7 +237,7 @@ void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
     hashmap_codegen_var_info_t_set(var_offsets, var_info->name, cginfo);
     if (codegen->cur_node->childs->val->type == NT_EXPR) {
         codegen_x8664_win_expr_gen(codegen, codegen->cur_node->childs->val->childs->val, 0);
-        string_cat(codegen->outcode, "mov %s [rbp - %u], rax\n",
+        putoutcode("mov %s [rbp - %u], rax\n",
                                      codegen_x8664_win_get_asm_type(var_info->type.type),
                                      codegen->namespaces->val->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
         return;
@@ -278,9 +289,10 @@ void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)
         vector_error_t_push_back(err_stk, gen_error("fun declaration node havent ast_fun_info", codegen->args.infile_name, 0, 0));
         return;
     }
-    string_cat(codegen->outcode, "%s:\n", fun_info->name);
-    string_cat(codegen->outcode, "push rbp\n"
-                                 "mov rbp, rsp\n");
+    putoutcode("%s:\n", fun_info->name);
+    putoutcode("push rbp\n", 0);
+    putoutcode("mov rbp, rsp\n", 0);
+    codegen->outcode_offset++;
 
     size_t offset = 0;
     size_t arg_num = 0;
@@ -300,11 +312,12 @@ void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)
 
         arg_num++;
     }
-    
+
     codegen_x8664_win_namespace_gen(codegen, offset);
 
-    string_cat(codegen->outcode, "pop rbp\n"
-                                 "ret\n");
+    codegen->outcode_offset--;
+    putoutcode("pop rbp\n", 0);
+    putoutcode("ret\n\n", 0);
 }
 
 void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen)
@@ -319,10 +332,10 @@ void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen)
         vector_error_t_push_back(err_stk, gen_error("var declaration node havent ast_var_info", codegen->args.infile_name, 0, 0));
         return;
     }
-    string_cat(codegen->outcode, "%s %s %s\n",
-                                 var_info->name,
-                                 codegen_x8664_win_get_static_asm_type(var_info->type.type),
-                                 (char*)codegen->cur_node->childs->val->info);
+    putoutcode("%s %s %s\n",
+               var_info->name,
+               codegen_x8664_win_get_static_asm_type(var_info->type.type),
+               (char*)codegen->cur_node->childs->val->info);
 }
 
 #endif
