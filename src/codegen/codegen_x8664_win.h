@@ -289,10 +289,18 @@ void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)
                    codegen_x8664_win_get_asm_type(cur->val->type.type),
                    offset += codegen_x8664_win_get_type_size(cur->val->type.type),
                    fun_args_regs[arg_num]);
+        codegen_var_info_t *var_info = malloc(sizeof(codegen_var_info_t));
+        var_info->isstatic   = 0;
+        var_info->type       = fun_info->type;
+        var_info->rbp_offset = offset;
+        hashmap_codegen_var_info_t_set(var_offsets, cur->val->name, var_info);
+        // for (size_t o = 0; o < var_offsets->keys_top; o++) {
+        //     printf_s("    %s\n", var_offsets->keys[o]);
+        // }
+
         arg_num++;
     }
-
-    printf_s("%u\n", offset);
+    
     codegen_x8664_win_namespace_gen(codegen, offset);
 
     string_cat(codegen->outcode, "pop rbp\n"
