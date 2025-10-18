@@ -3,24 +3,16 @@
 Now *scc* compile code only to wondows platform, but I hope that will change soon
 
 # Building
-### get make
-To build *scc* you need have *make*\
-To get it on windows run this:
+for building *scc* you need python, download it from [official site](https://www.python.org/)\
+next just a run build script
 ```
-winget install ezwinports.make
+python tools/build.py
 ```
-If you use linux, I think you alredy have *make* on you distributeve
-### build scc
-To build *scc* just run this in root directory of *scc*:
+and if you on *windows* run the install script
 ```
-make
+python tools/install.py
 ```
-You can check if build was finish successfully:
-```
-scc -h
-```
-If you dont receive an error messages, the build was successful
-
+you can setting up building in *tools/config.py*
 # usage
 You can get usage of scc in console:
 ```
