@@ -14,6 +14,7 @@ string_t *string_create()
 {
     string_t *str = malloc(sizeof(string_t));
     str->str = malloc(sizeof(char) * 512);
+    str->str[0] = '\0';
     str->size = 0;
     str->aloc_size = 512;
     return str;
@@ -56,10 +57,10 @@ void string_push_back(string_t *str, char val)
 
 void string_cat(string_t *str, char *fmt, ...)
 {
-    char *buf = malloc(16*1024);
+    char *buf = malloc(4*1024);
     va_list args;
     va_start(args, fmt);
-    vsnprintf(buf, 16*1024, fmt, args);
+    vsnprintf(buf, 4*1024, fmt, args);
     va_end(args);
 
     for (size_t i = 0; i < strlen(buf); i++) {

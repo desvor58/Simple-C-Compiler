@@ -48,7 +48,7 @@ void ast_print(ast_node_t *node, int tab)
     printf_s("%s  %s  %u\n", str, (char*)node->info, node->info);
     size_t i = 0;
     while (i < list_ast_node_t_size(node->childs)) {
-        ast_print(list_ast_node_t_get(node->childs, i), tab + 1);
+        ast_print(list_ast_node_t_get(node->childs, i), tab + 2);
         i++;
     }
 }
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
         lex_text(lexer);
         if (args.flags & ARGS_FLG_TOKS_PUT) {
             for (size_t i = 0; i < toks->size; i++) {
-                printf_s("%u:%u %u %s\n", toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
+                printf_s("%u. %u:%u %u %s\n", i, toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
             }
         }
 

@@ -1,3 +1,4 @@
+bits 64
 global main
 section .data
 global_var dd 17
@@ -5,18 +6,18 @@ section .text
 foo:
 push rbp
 mov rbp, rsp
-mov dword [rbp - 4], 6
-mov dword [rbp - 8], dword [rbp - 4]
+mov dword [rbp - 4], r8
+mov byte [rbp - 5], r9
+mov dword [rbp - 9], 6
+mov rax, dword [rbp - 9]
+mov dword [rbp - 13], rax
 pop rbp
 ret
 main:
 push rbp
 mov rbp, rsp
-mov byte [rbp - 1], 0
-mov dword [rbp - 5], -5
-mov dword [rbp - 9], dword [rbp - 5]
-mov rax, rbp - 1
-mov rbx, 0
-mov [rax], rbx
+mov dword [rbp - 4], -5
+mov rax, dword [rbp - 4]
+mov dword [rbp - 8], rax
 pop rbp
 ret

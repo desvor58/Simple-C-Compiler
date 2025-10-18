@@ -61,7 +61,7 @@ void codegen_x8664_win(codegen_x8664_win_info_t *codegen)
 {
     var_offsets = hashmap_codegen_var_info_t_create();
 
-    putoutcode("global %s\n", codegen->args.entry_fun_name);
+    putoutcode("bits 64\nglobal %s\n", codegen->args.entry_fun_name);
 
     string_cat(codegen->outcode, "section .data\n");
     foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
@@ -129,13 +129,11 @@ char *codegen_x8664_win_get_asm_type(ctype_type ctype)
     }
 }
 
-static const char *expr_regs_stack[] = {
+static char *expr_regs_stack[] = {
     "rax",
     "rbx",
     "rcx",
     "rdx",
-    "r8",
-    "r9"
 };
 
 void codegen_x8664_win_get_val(codegen_x8664_win_info_t *codegen, ast_node_t *node, char *dst)
@@ -155,7 +153,11 @@ void codegen_x8664_win_get_val(codegen_x8664_win_info_t *codegen, ast_node_t *no
         if (var_info->isstatic) {
             putoutcode("mov %s, [rel %s]\n", dst, node->info);
         } else {
-            putoutcode("mov %s, %s [rbp - %u]\n",
+            // printf_s("%s\n", dst);
+            putoutcode("mov rax, %s [rbp - %u]\n",
+                       codegen_x8664_win_get_asm_type(var_info->type.type),
+                       var_info->rbp_offset);
+            putoutcode("mov %s, rax\n",
                        dst,
                        codegen_x8664_win_get_asm_type(var_info->type.type),
                        var_info->rbp_offset);
@@ -233,15 +235,16 @@ void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
     string_cat(dst_str, "%s [rbp - %u]",
                         codegen_x8664_win_get_asm_type(var_info->type.type),
                         codegen->namespaces->val->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
+    string_push_back(dst_str, '\0');
     codegen_x8664_win_get_val(codegen, codegen->cur_node->childs->val, dst_str->str);
     string_free(dst_str);
 }
 
-void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen)
+void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen, size_t locvar_start)
 {
     ast_node_t *body = codegen->cur_node;
     codegen_namespace_info_t *namespace = malloc(sizeof(codegen_namespace_info_t));
-    namespace->locvar_offset = 0;
+    namespace->locvar_offset = locvar_start;
     list_codegen_namespace_info_t_pair_t *new_namespace_list = list_codegen_namespace_info_t_create();
     new_namespace_list->val = namespace;
     new_namespace_list->next = codegen->namespaces;
@@ -259,6 +262,15 @@ void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen)
     free(namespace);
 }
 
+static char *fun_args_regs[] = {
+    "r8",
+    "r9",
+    "r10",
+    "r11",
+    "r12",
+    "r13"
+};
+
 void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)
 {
     ast_fun_info_t *fun_info = (ast_fun_info_t*)codegen->cur_node->info;
@@ -270,7 +282,18 @@ void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)
     string_cat(codegen->outcode, "push rbp\n"
                                  "mov rbp, rsp\n");
 
-    codegen_x8664_win_namespace_gen(codegen);
+    size_t offset = 0;
+    size_t arg_num = 0;
+    foreach (list_ast_var_info_t_pair_t, fun_info->params) {
+        putoutcode("mov %s [rbp - %u], %s\n",
+                   codegen_x8664_win_get_asm_type(cur->val->type.type),
+                   offset += codegen_x8664_win_get_type_size(cur->val->type.type),
+                   fun_args_regs[arg_num]);
+        arg_num++;
+    }
+
+    printf_s("%u\n", offset);
+    codegen_x8664_win_namespace_gen(codegen, offset);
 
     string_cat(codegen->outcode, "pop rbp\n"
                                  "ret\n");

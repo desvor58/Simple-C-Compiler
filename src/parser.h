@@ -210,6 +210,7 @@ void parser_var_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
                                                     parser->toks->arr[parser->pos + 1].line_ref,
                                                     parser->toks->arr[parser->pos + 1].chpos_ref));
     }
+    while (parser->toks->arr[++parser->pos].type != TT_SEMICOLON) {}
     parser->cur_node = ast_acc;
 }
 
@@ -303,12 +304,13 @@ void parser_decl_parse(parser_info_t *parser)
     ctype_t type = parser_type_parse(parser, type_slice, ident_offset);
     vector_token_t_free(type_slice);
 
+    // printf_s("%s, %u\n", type_slice->arr[ident_offset].val, type.type);
+
     if (parser->toks->arr[parser->pos + se_offset].type == TT_LPARENT) {
         parser_fun_decl_parse(parser, ident_offset, se_offset, type, ident);
-        return;
+    } else {
+        parser_var_decl_parse(parser, ident_offset, se_offset, type, ident);
     }
-    parser_var_decl_parse(parser, ident_offset, se_offset, type, ident);
-    while (parser->toks->arr[++parser->pos].type != TT_SEMICOLON) {}
 }
 
 #endif

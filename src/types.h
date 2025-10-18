@@ -161,8 +161,6 @@ typedef struct {
     list_ast_var_info_t_pair_t *params;
 } ast_fun_info_t;
 
-extern struct list_ast_node_t_pair_t;
-
 typedef struct {
     ast_node_type                  type;
     struct list_ast_node_t_pair_t *childs;
@@ -314,7 +312,7 @@ void get_file_text(FILE *file, string_t *buf)
                 while (c != '\n' && c != EOF) {
                     c = getc(file);
                 }
-                string_push_back(buf, '\n');
+                buf->str[buf->size - 1] = '\n';
             }
         }
     }
