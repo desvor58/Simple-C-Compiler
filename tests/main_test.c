@@ -1,11 +1,12 @@
-int global_var = 17;
-
-int foo(int a, char c)
-{
-    int local_var = a;
-    int lv = local_var;
-}
-
 int main()
 {
+    int var = ((3 + 5) - 2) * 5;
 }
+
+
+// 5 * (3 + 5)
+// bop *
+//   bop +
+//     5
+//     3
+//   5

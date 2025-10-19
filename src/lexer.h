@@ -80,7 +80,8 @@ void lex_text(lexer_info_t *lexer)
             if (lexer->toks->arr[lexer->toks->size - 1].type != TT_IDENT
              && lexer->toks->arr[lexer->toks->size - 1].type != TT_INT_LIT
              && lexer->toks->arr[lexer->toks->size - 1].type != TT_STR_LIT
-             && lexer->toks->arr[lexer->toks->size - 1].type != TT_FLOAT_LIT) {
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_FLOAT_LIT
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_RPARENT) {
                 lexer->buf[0] = '-';
                 while (lexer->text[++lexer->pos] == ' ') {}
                 if (isdigit(lexer->text[lexer->pos])) {

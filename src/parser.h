@@ -164,12 +164,55 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
         parser_get_val(parser, expr);
         return;
     }
+    if (expr->arr[0].type == TT_LPARENT) {
+        size_t pi = 1;
+        size_t skip_parent = 0;
+        for (;;) {
+            if (expr->arr[pi].type == TT_LPARENT) {
+                skip_parent++;
+            }
+            if (expr->arr[pi].type == TT_RPARENT) {
+                if (skip_parent) {
+                    skip_parent--;
+                } else {
+                    break;
+                }
+            }
+            pi++;
+        }
+        if (pi == expr->size - 1) {
+            vector_token_t_t *subparent_expr = vector_token_t_create();
+            for (size_t i = 1; i < expr->size - 1; i++) {
+                vector_token_t_push_back(subparent_expr, expr->arr[i]);
+            }
+            parser_expr_parse(parser, subparent_expr);
+            vector_token_t_free(subparent_expr);
+            return;
+        }
+    }
     ast_node_t *ast_acc = parser->cur_node;
     
     size_t bop_type_i = 0;
-    while (bop_type_i < 4) {
+    while (bop_type_i < sizeof(op_parse_stack) / sizeof(*op_parse_stack)) {
         size_t i = 0;
         while (i < expr->size) {
+            if (expr->arr[i].type == TT_LPARENT) {
+                i++;
+                size_t skip_parent = 0;
+                for (;;) {
+                    if (expr->arr[i].type == TT_LPARENT) {
+                        skip_parent++;
+                    }
+                    if (expr->arr[i].type == TT_RPARENT) {
+                        if (skip_parent) {
+                            skip_parent--;
+                        } else {
+                            break;
+                        }
+                    }
+                    i++;
+                }
+            }
             if (expr->arr[i].type == op_parse_stack[bop_type_i]) {
                 parser_parse_bop(parser, i, expr);
                 goto bop_parse_end;
