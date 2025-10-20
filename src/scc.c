@@ -41,6 +41,7 @@ void ast_print(ast_node_t *node, int tab)
     if (node->type == NT_BOP)              str = "bop";
     if (node->type == NT_UOP)              str = "uop";
     if (node->type == NT_FUNCTION_DECL)    str = "fun decl";
+    if (node->type == NT_FUNCTION_CALL)    str = "fun call";
 
     for (int i = 0; i < tab; i++) {
         putchar(' ');

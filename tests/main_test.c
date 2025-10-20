@@ -1,12 +1,26 @@
 int main()
 {
-    int var = ((3 + 5) - 2) * 5;
+    int var = foo((3 + 5) * 5);
 }
 
 
-// 5 * (3 + 5)
-// bop *
-//   bop +
-//     5
-//     3
+// some_fun(5, 3) * 5 + 3
+//
+//+
+// 3
+// *
+//  5
+//  fun_call
+//   some_fun
 //   5
+//   3
+
+// arr[index](5, 4) + 5
+//
+// fun_call_op
+//   expr
+//     get_by_index_op
+//       ident arr
+//       ident index
+//   int lit 5
+//   int lit 4
