@@ -198,6 +198,11 @@ void codegen_x8664_win_expr_gen(codegen_x8664_win_info_t *codegen, ast_node_t *r
      || root->type == NT_STR_LIT) {
         codegen_x8664_win_get_val(codegen, root, expr_regs_stack[reg_num]);
     }
+    if (root->type == NT_FUNCTION_CALL) {
+        if (list_ast_node_t_size(root->childs) == 1) {
+            putoutcode("call %s\n", root->childs->val->info);
+        }
+    }
     if (root->type == NT_BOP) {
         if (!strcmp(root->info, "=")) {
             if (root->childs->val->type != NT_IDENT) {

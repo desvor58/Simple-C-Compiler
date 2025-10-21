@@ -1,6 +1,6 @@
 int main()
 {
-    int var = foo((3 + 5) * 5);
+    int var = foo();
 }
 
 
