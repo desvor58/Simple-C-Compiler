@@ -16,6 +16,7 @@
         "stdlib.h": "c",
         "codegen_x8664_win_expr.h": "c",
         "codegen_x8664_win_types.h": "c",
-        "expr.h": "c"
+        "expr.h": "c",
+        "common.h": "c"
     }
 }

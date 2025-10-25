@@ -34,6 +34,20 @@ error_t args_parse(args_t *args, int argc, char **argv)
                     return err;
                 }
             } else
+            if (argv[cur_arg][1] == 't') {
+                char buf[64] = {0};
+                error_t err = args_parse_get_tok(buf, argc, argv, &cur_arg);
+                if (strlen(err.msg)) {
+                    printf_s("%s", err.msg);
+                    return err;
+                }
+                if (!strcmp(buf, "win64")) {
+                    args->target = TRGT_x8664_WIN;
+                } else
+                if (!strcmp(buf, "i8086")) {
+                    args->target = TRGT_x8086;
+                }
+            } else
             if (argv[cur_arg][1] == 'h') {
                 puts(HELP_MENU);
                 exit(0);

@@ -1,5 +1,5 @@
-#ifndef CODEGEN_X8664_WIN_COMMON_H
-#define CODEGEN_X8664_WIN_COMMON_H
+#ifndef CODEGEN_X8086_WIN_COMMON_H
+#define CODEGEN_X8086_WIN_COMMON_H
 
 #include "../../types.h"
 #include "../../types/hashmap.h"
@@ -13,16 +13,17 @@ typedef struct {
     string_t                             *outcode;
     size_t                                outcode_offset;
     list_codegen_namespace_info_t_pair_t *namespaces;
-} codegen_x8664_win_info_t;
+} codegen_x8086_info_t;
 
-void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen);
-void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen);
-void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen);
-void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen, size_t locvar_start);
+void codegen_x8086_var_decl(codegen_x8086_info_t *codegen);
+void codegen_x8086_static_var_decl(codegen_x8086_info_t *codegen);
+void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen);
+void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_start);
 
-codegen_x8664_win_info_t *codegen_x8664_win_create(args_t args, ast_node_t *ast)
+codegen_x8086_info_t *codegen_x8086_create(vector_error_t_t *err_stk, args_t args, ast_node_t *ast)
 {
-    codegen_x8664_win_info_t *codegen = (codegen_x8664_win_info_t*)malloc(sizeof(codegen_x8664_win_info_t));
+    codegen_x8086_info_t *codegen = malloc(sizeof(codegen_x8086_info_t));
+    codegen->err_stk = err_stk;
     codegen->args = args;
     codegen->ast_root = ast;
     codegen->cur_node = ast;
@@ -35,7 +36,7 @@ codegen_x8664_win_info_t *codegen_x8664_win_create(args_t args, ast_node_t *ast)
     return codegen;
 }
 
-void codegen_x8664_win_delete(codegen_x8664_win_info_t *codegen)
+void codegen_x8086_delete(codegen_x8086_info_t *codegen)
 {
     foreach (list_codegen_namespace_info_t_pair_t, codegen->namespaces) {
         free(cur->val);
@@ -51,7 +52,7 @@ hashmap_codegen_var_info_t_t *var_offsets;
         string_cat(codegen->outcode, "    ");  \
     string_cat(codegen->outcode, fmt, __VA_ARGS__)
 
-size_t codegen_x8664_win_get_type_size(ctype_type ctype)
+size_t codegen_x8086_get_type_size(ctype_type ctype)
 {
     if (ctype == CT_CHAR) {
         return 1;
@@ -60,15 +61,12 @@ size_t codegen_x8664_win_get_type_size(ctype_type ctype)
         return 2;
     } else
     if (ctype == CT_INT) {
-        return 4;
-    } else
-    if (ctype == CT_LONG) {
-        return 8;
+        return 2;
     }
     return 0;
 }
 
-char *codegen_x8664_win_get_static_asm_type(ctype_type ctype)
+char *codegen_x8086_get_static_asm_type(ctype_type ctype)
 {
     if (ctype == CT_CHAR) {
         return "db";
@@ -77,14 +75,12 @@ char *codegen_x8664_win_get_static_asm_type(ctype_type ctype)
         return "dw";
     } else
     if (ctype == CT_INT) {
-        return "dd";
-    } else
-    if (ctype == CT_LONG) {
-        return "dq";
+        return "dw";
     }
+    return "";
 }
 
-char *codegen_x8664_win_get_asm_type(ctype_type ctype)
+char *codegen_x8086_get_asm_type(ctype_type ctype)
 {
     if (ctype == CT_CHAR) {
         return "byte";
@@ -93,11 +89,20 @@ char *codegen_x8664_win_get_asm_type(ctype_type ctype)
         return "word";
     } else
     if (ctype == CT_INT) {
-        return "dword";
-    } else
-    if (ctype == CT_LONG) {
-        return "qword";
+        return "word";
     }
+}
+
+void codegen_x8086_get_reg(char *res, char R, ctype_type type)
+{
+    res[0] = R;
+    if (type == CT_CHAR) {
+        res[1] = 'l';
+    } else
+    if (type == CT_SHORT || type == CT_INT){
+        res[1] = 'x';
+    }
+    res[2] = '\0';
 }
 
 #endif

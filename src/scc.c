@@ -12,7 +12,8 @@
 #include "preproc.h"
 #include "lexer.h"
 #include "parser.h"
-#include "codegen/codegen_x8664_win.h"
+#include "codegen/x8664_win.h"
+#include "codegen/x8086.h"
 
 string_t *code;
 args_t    args;
@@ -106,17 +107,32 @@ int main(int argc, char **argv)
         }
 
         /* --- codegen --- */
-            codegen_x8664_win_info_t *codegen = codegen_x8664_win_create(args, parser->ast_root);
+            if (args.target == TRGT_x8664_WIN) {
+                codegen_x8664_win_info_t *codegen = codegen_x8664_win_create(args, parser->ast_root);
 
-            codegen_x8664_win(codegen);
-            if (args.flags & ARGS_FLG_ASM_STOP) {
-                FILE *sfile;
-                fopen_s(&sfile, "a.s", "w");
-                fprintf_s(sfile, "%s", codegen->outcode->str);
-                fclose(sfile);
+                codegen_x8664_win(codegen);
+                if (args.flags & ARGS_FLG_ASM_STOP) {
+                    FILE *sfile;
+                    fopen_s(&sfile, "a.s", "w");
+                    fprintf_s(sfile, "%s", codegen->outcode->str);
+                    fclose(sfile);
+                }
+                
+                codegen_x8664_win_delete(codegen);
+            } else
+            if (args.target == TRGT_x8086) {
+                codegen_x8086_info_t *codegen = codegen_x8086_create(err_stk, args, parser->ast_root);
+
+                codegen_x8086(codegen);
+                if (args.flags & ARGS_FLG_ASM_STOP) {
+                    FILE *sfile;
+                    fopen_s(&sfile, "a.s", "w");
+                    fprintf_s(sfile, "%s", codegen->outcode->str);
+                    fclose(sfile);
+                }
+                
+                codegen_x8086_delete(codegen);
             }
-            
-            codegen_x8664_win_delete(codegen);
         /* --------------- */
 
         parser_delete(parser);

@@ -1,7 +1,4 @@
-int main()
-{
-    int var = foo();
-}
+int glob_var = 54;
 
 
 // some_fun(5, 3) * 5 + 3

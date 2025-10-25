@@ -28,11 +28,17 @@ typedef          double f64;
 #define ARGS_FLG_AST_PUT      8
 #define ARGS_FLG_OBJ_STOP     16
 
+typedef enum {
+    TRGT_x8664_WIN,
+    TRGT_x8086,
+} target_type;
+
 typedef struct {
-    char infile_name[64];
-    char outfile_name[64];
-    int  flags;
-    char entry_fun_name[64];
+    char        infile_name[64];
+    char        outfile_name[64];
+    int         flags;
+    char        entry_fun_name[64];
+    target_type target;
 } args_t;
 
 typedef struct {
@@ -211,6 +217,21 @@ char *stralc(char *str)
     }
     *n = '\0';
     return new_str;
+}
+
+char *format(char *fmt, ...)
+{
+    char *buf = malloc(4*1024);
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, 4*1024, fmt, args);
+    va_end(args);
+    char *res = malloc(strlen(buf) + 1);
+    for (size_t i = 0; i < strlen(buf) + 1; i++) {
+        res[i] = buf[i];
+    }
+    free(buf);
+    return res;
 }
 
 int buf_insert(char *buf, size_t buf_size, size_t index, char *insert)

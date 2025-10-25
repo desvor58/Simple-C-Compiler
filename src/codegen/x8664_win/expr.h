@@ -10,6 +10,28 @@ static char *expr_regs_stack[] = {
     "rdx",
 };
 
+/*
+
+a + b * c * d
+
++
+ a
+ *
+  b
+  *
+   c
+   d
+
+d -> ax
+c -> bx
+mul ax, bx
+b -> bx
+mul ax, bx
+a -> bx
+add ax, bx
+
+*/
+
 void codegen_x8664_win_get_val(codegen_x8664_win_info_t *codegen, ast_node_t *node, char *dst)
 {
     if (node->type == NT_INT_LIT
