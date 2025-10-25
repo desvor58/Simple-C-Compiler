@@ -1,4 +1,10 @@
-int glob_var = 54;
+
+
+int main()
+{
+    int loc_var = 6;
+    int var2 = loc_var;
+}
 
 
 // some_fun(5, 3) * 5 + 3

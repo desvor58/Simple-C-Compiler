@@ -40,33 +40,35 @@ void codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, siz
         codegen_x8086_get_reg(reg, 'a', expected_type.type);
         putoutcode("mov %s, [bp - %u]\n",
                     reg,
-                    dst_offset + codegen_x8086_get_type_size(expected_type.type));
+                    dst_offset);
         if (!strcmp(root->info, "*")) {
-            putoutcode("imul %s [bp - %u], %s\n",
+            putoutcode("imul %s, %s [bp - %u]\n",
+                       reg,
                        codegen_x8086_get_asm_type(expected_type.type),
-                       dst_offset,
-                       reg);
+                       dst_offset + codegen_x8086_get_type_size(expected_type.type));
         } else
         if (!strcmp(root->info, "/")) {
-            putoutcode("idiv %s [bp - %u], %s\n",
+            putoutcode("imul %s, %s [bp - %u]\n",
+                       reg,
                        codegen_x8086_get_asm_type(expected_type.type),
-                       dst_offset,
-                       reg);
+                       dst_offset + codegen_x8086_get_type_size(expected_type.type));
         } else
         if (!strcmp(root->info, "+")) {
-            putoutcode("add %s [bp - %u], %s\n",
+            putoutcode("add %s, %s [bp - %u]\n",
+                       reg,
                        codegen_x8086_get_asm_type(expected_type.type),
-                       dst_offset,
-                       reg);
+                       dst_offset + codegen_x8086_get_type_size(expected_type.type));
         } else
         if (!strcmp(root->info, "-")) {
-            putoutcode("sub %s [bp - %u], %s\n",
+            putoutcode("sub %s, %s [bp - %u]\n",
+                       reg,
                        codegen_x8086_get_asm_type(expected_type.type),
-                       dst_offset,
-                       reg);
-        } else {
-            exit(3462346);
+                       dst_offset + codegen_x8086_get_type_size(expected_type.type));
         }
+        putoutcode("mov %s [bp - %u], %s\n",
+                    codegen_x8086_get_asm_type(expected_type.type),
+                    dst_offset,
+                    reg);
     }
 }
 

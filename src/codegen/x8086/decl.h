@@ -37,20 +37,14 @@ void codegen_x8086_var_decl(codegen_x8086_info_t *codegen)
     if (codegen->cur_node->childs->val->type == NT_EXPR) {
         codegen_x8086_expr_gen(codegen,
                                codegen->cur_node->childs->val->childs->val,
-                               codegen->namespaces->val->locvar_offset + codegen_x8086_get_type_size(var_info->type.type),
+                               codegen->namespaces->val->locvar_offset += codegen_x8086_get_type_size(var_info->type.type),
                                var_info->type);
         return;
     }
-    string_t *dst_str = string_create();
-    string_cat(dst_str, "%s [rbp - %u]",
-                        codegen_x8086_get_asm_type(var_info->type.type),
-                        codegen->namespaces->val->locvar_offset += codegen_x8086_get_type_size(var_info->type.type));
-    string_push_back(dst_str, '\0');
     codegen_x8086_get_val(codegen,
                           codegen->cur_node->childs->val,
-                          codegen->namespaces->val->locvar_offset + codegen_x8086_get_type_size(var_info->type.type),
+                          codegen->namespaces->val->locvar_offset += codegen_x8086_get_type_size(var_info->type.type),
                           var_info->type);
-    string_free(dst_str);
 }
 
 void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
@@ -87,7 +81,7 @@ void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
     codegen_x8086_namespace_gen(codegen, offset);
 
     codegen->outcode_offset--;
-    putoutcode("pop rbp\n", 0);
+    putoutcode("pop bp\n", 0);
     putoutcode("ret\n\n", 0);
 }
 
