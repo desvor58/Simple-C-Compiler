@@ -36,7 +36,6 @@ void codegen_x8664_win_get_val(codegen_x8664_win_info_t *codegen, ast_node_t *no
                        codegen_x8664_win_get_asm_type(var_info->type.type),
                        var_info->rbp_offset);
         }
-        return;
     }
 }
 

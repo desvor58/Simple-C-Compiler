@@ -3,7 +3,7 @@
 int main()
 {
     int loc_var = 6;
-    int var2 = loc_var;
+    int var2 = loc_var + 5;
 }
 
 

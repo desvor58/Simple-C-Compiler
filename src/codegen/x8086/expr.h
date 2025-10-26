@@ -12,6 +12,24 @@ void codegen_x8086_get_val(codegen_x8086_info_t *codegen, ast_node_t *node, size
                    codegen_x8086_get_asm_type(expected_type.type),
                    dst_offset,
                    node->info);
+    } else
+    if (node->type == NT_IDENT) {
+        codegen_var_info_t *var_info = hashmap_codegen_var_info_t_get(var_offsets, node->info);
+        if (!var_info) {
+            puts("error in x8086:expr:get_val:if ident");
+            exit(1);
+        }
+        if (var_info->isstatic) {
+            putoutcode("mov %s [bp - %u], [rel %s]\n",
+                       codegen_x8086_get_asm_type(expected_type.type),
+                       dst_offset,
+                       node->info);
+        } else {
+            putoutcode("mov ax, [bp - %u]\n", var_info->rbp_offset);
+            putoutcode("mov %s [bp - %u], ax\n",
+                       codegen_x8086_get_asm_type(expected_type.type),
+                       dst_offset);
+        }
     }
 }
 
