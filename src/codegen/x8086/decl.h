@@ -30,21 +30,22 @@ void codegen_x8086_var_decl(codegen_x8086_info_t *codegen)
 {
     ast_var_info_t *var_info = codegen->cur_node->info;
     codegen_var_info_t *cginfo = malloc(sizeof(codegen_var_info_t));
-    cginfo->rbp_offset = codegen->namespaces->val->locvar_offset + codegen_x8086_get_type_size(var_info->type.type);
+    cginfo->rbp_offset = codegen->namespaces->val->locvar_offset;
     cginfo->isstatic = 0;
     cginfo->type = var_info->type;
     hashmap_codegen_var_info_t_set(var_offsets, var_info->name, cginfo);
     if (codegen->cur_node->childs->val->type == NT_EXPR) {
         codegen_x8086_expr_gen(codegen,
                                codegen->cur_node->childs->val->childs->val,
-                               codegen->namespaces->val->locvar_offset += codegen_x8086_get_type_size(var_info->type.type),
+                               codegen->namespaces->val->locvar_offset,
                                var_info->type);
-        return;
+    } else {
+        codegen_x8086_get_val(codegen,
+                              codegen->cur_node->childs->val,
+                              codegen->namespaces->val->locvar_offset,
+                              var_info->type);
     }
-    codegen_x8086_get_val(codegen,
-                          codegen->cur_node->childs->val,
-                          codegen->namespaces->val->locvar_offset += codegen_x8086_get_type_size(var_info->type.type),
-                          var_info->type);
+    codegen->namespaces->val->locvar_offset += codegen_x8086_get_type_size(var_info->type.type);
 }
 
 void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
@@ -59,7 +60,7 @@ void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
     putoutcode("mov bp, sp\n", 0);
     codegen->outcode_offset++;
 
-    size_t offset = 0;
+    size_t offset = 2;
     size_t arg_num = 0;
     // foreach (list_ast_var_info_t_pair_t, fun_info->params) {
     //     putoutcode("mov %s [bp - %u], %s\n",

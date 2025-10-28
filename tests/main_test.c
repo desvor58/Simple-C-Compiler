@@ -2,8 +2,9 @@
 
 int main()
 {
-    int loc_var = 6;
-    int var2 = loc_var + 5;
+    char var1 = 6;
+    int  var2 = var1;
+    char var3 = var2;
 }
 
 

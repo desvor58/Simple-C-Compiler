@@ -3,6 +3,16 @@
 
 #include "common.h"
 
+void codegen_x8086_cast(codegen_x8086_info_t *codegen, codegen_var_info_t *var_info, ctype_t cast_type, char *dst)
+{
+    if (var_info->type.type == CT_CHAR && (cast_type.type == CT_SHORT || cast_type.type == CT_INT)) {
+        putoutcode("movsx %s, byte [bp - %u]\n", dst, var_info->rbp_offset);
+    } else
+    if ((var_info->type.type == CT_SHORT || var_info->type.type == CT_INT) && cast_type.type == CT_CHAR) {
+        putoutcode("mov %s, word [bp - %u]\n", dst, var_info->rbp_offset);
+    }
+}
+
 void codegen_x8086_get_val(codegen_x8086_info_t *codegen, ast_node_t *node, size_t dst_offset, ctype_t expected_type)
 {
     if (node->type == NT_INT_LIT
@@ -25,10 +35,17 @@ void codegen_x8086_get_val(codegen_x8086_info_t *codegen, ast_node_t *node, size
                        dst_offset,
                        node->info);
         } else {
-            putoutcode("mov ax, [bp - %u]\n", var_info->rbp_offset);
-            putoutcode("mov %s [bp - %u], ax\n",
+            char *reg = alloca(3);
+            codegen_x8086_get_reg(reg, 'a', expected_type.type);
+            if (var_info->type.type != expected_type.type) {
+                codegen_x8086_cast(codegen, var_info, expected_type, "ax");
+            } else {
+                putoutcode("mov ax, [bp - %u]\n", var_info->rbp_offset);
+            }
+            putoutcode("mov %s [bp - %u], %s\n",
                        codegen_x8086_get_asm_type(expected_type.type),
-                       dst_offset);
+                       dst_offset,
+                       reg);
         }
     }
 }
