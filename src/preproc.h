@@ -127,9 +127,9 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
             preproc->buf[i] = preproc->text[preproc->pos];
         }
         preproc->buf[i] = '\0';
-        char *full_path = malloc(128);
+        char *full_path = malloc(256);
         get_folder_path(preproc->file, full_path);
-        strcat_s(full_path, 128, preproc->buf);
+        strcat_s(full_path, 256, preproc->buf);
         FILE *included_file;
         fopen_s(&included_file, full_path, "r");
         free(full_path);

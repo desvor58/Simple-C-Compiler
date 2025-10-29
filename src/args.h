@@ -20,6 +20,7 @@ error_t args_parse(args_t *args, int argc, char **argv)
     strcpy(args->infile_name, "");
     strcpy(args->outfile_name, "a.exe");
     strcpy(args->entry_fun_name, "main");
+    args->target = TRGT_x8664_WIN;
     args->flags = 0;
 
     for (int cur_arg = 1; cur_arg < argc; cur_arg++) {

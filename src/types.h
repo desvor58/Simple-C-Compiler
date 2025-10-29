@@ -307,7 +307,7 @@ void put_pos_str(char *str, size_t pos)
 
 void get_folder_path(char *path, char *buf)
 {
-    long long top = strlen(buf) + 1;
+    long long top = strlen(path);
     while (path[top] != '/' && top >= 0) {
         top--;
     }
@@ -315,7 +315,8 @@ void get_folder_path(char *path, char *buf)
     buf[1] = '/';
     size_t i = 2;
     while (i - 2 <= top) {
-        buf[i++] = path[i - 2];
+        buf[i] = path[i - 2];
+        i++;
     }
     buf[i] = '\0';
 }

@@ -10,7 +10,7 @@
 #define HASHMAP_BUCKIT_NUM   64
 #define MAX_HASHMAP_KEYS_BUF 1024
 
-#define VERSION "SCC by Desvor v0.0.1489"
+#define VERSION "SCC by Desvor v0.0.666"
 #define HELP_MENU                                                                                    \
     "usage: scc [options] <C code file name>"                                                        \
     "options:\n"                                                                                     \
@@ -23,7 +23,7 @@
     "    -e <function name>    Set entry function to <function name>\n"                              \
     "    -v                    Put version of prcc\n"                                                \
     "    -t <target_platform>  Set target platform to compiling\n"                                   \
-    "       win64              Windows 64bits\n"                                                     \
-    "       i8086              raw binnary file with code for processors >= Intel 8086\n"            \
+    "        win64             Windows 64bits\n"                                                     \
+    "        i8086             raw binnary file with code for processors >= Intel 8086\n"            \
 
 #endif
