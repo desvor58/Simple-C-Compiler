@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "expr.h"
+#include "statements.h"
 
 void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_start)
 {
@@ -17,6 +18,9 @@ void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_st
         codegen->cur_node = cur->val;
         if (cur->val->type == NT_VARIABLE_DECL) {
             codegen_x8086_var_decl(codegen);
+        } else
+        if (cur->val->type == NT_STMT_RETURN) {
+            codegen_x8086_stmt_return_gen(codegen);
         } else {
             codegen_x8086_expr_gen(codegen, cur->val, namespace->locvar_offset, (ctype_t){CT_INT});
         }
@@ -55,6 +59,8 @@ void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
         vector_error_t_push_back(codegen->err_stk, gen_error("fun declaration node havent ast_fun_info", codegen->args.infile_name, 0, 0));
         return;
     }
+    codegen->cur_fun_info = fun_info;
+
     putoutcode("%s:\n", fun_info->name);
     codegen->outcode_offset++;
     putoutcode("push bp\n", 0);

@@ -13,6 +13,7 @@ typedef struct {
     string_t                             *outcode;
     size_t                                outcode_offset;
     list_codegen_namespace_info_t_pair_t *namespaces;
+    ast_fun_info_t                       *cur_fun_info;
 } codegen_x8086_info_t;
 
 void codegen_x8086_var_decl(codegen_x8086_info_t *codegen);
@@ -33,6 +34,7 @@ codegen_x8086_info_t *codegen_x8086_create(vector_error_t_t *err_stk, args_t arg
     codegen_namespace_info_t *global_namespace = malloc(sizeof(codegen_namespace_info_t));
     global_namespace->locvar_offset = 0;
     list_codegen_namespace_info_t_add(codegen->namespaces, global_namespace);
+    codegen->cur_fun_info = 0;
     return codegen;
 }
 
