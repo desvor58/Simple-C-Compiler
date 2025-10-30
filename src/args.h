@@ -81,8 +81,7 @@ error_t args_parse(args_t *args, int argc, char **argv)
             } else {
                 return gen_error("unknow flag name", args->infile_name, 0, 0);
             }
-        }
-        if (cur_arg == 1) {
+        } else {
             strcpy(args->infile_name, argv[1]);
         }
     }

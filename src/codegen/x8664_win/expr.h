@@ -71,7 +71,7 @@ void codegen_x8664_win_expr_gen(codegen_x8664_win_info_t *codegen, ast_node_t *r
     }
     if (root->type == NT_FUNCTION_CALL) {
         putoutcode("call %s\n", root->childs->val->info);
-        putoutcode("mov, %s, [rsp - 16]\n", expr_regs_stack[reg_num]);
+        putoutcode("mov %s, [rsp - 16]\n", expr_regs_stack[reg_num]);
     }
     if (root->type == NT_BOP) {
         if (!strcmp(root->info, "=")) {

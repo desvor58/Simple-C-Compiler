@@ -31,6 +31,7 @@ void codegen_x8086(codegen_x8086_info_t *codegen)
         }
     }
     codegen->outcode_offset--;
+    string_push_back(codegen->outcode, '\0');
 }
 
 

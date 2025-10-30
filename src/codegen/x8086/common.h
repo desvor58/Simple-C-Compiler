@@ -52,54 +52,54 @@ hashmap_codegen_var_info_t_t *var_offsets;
         string_cat(codegen->outcode, "    ");  \
     string_cat(codegen->outcode, fmt, __VA_ARGS__)
 
-size_t codegen_x8086_get_type_size(ctype_type ctype)
+size_t codegen_x8086_get_type_size(ctype_t ctype)
 {
-    if (ctype == CT_CHAR) {
+    if (ctype.type == CT_CHAR) {
         return 1;
     } else
-    if (ctype == CT_SHORT) {
+    if (ctype.type == CT_SHORT) {
         return 2;
     } else
-    if (ctype == CT_INT) {
+    if (ctype.type == CT_INT) {
         return 2;
     }
     return 0;
 }
 
-char *codegen_x8086_get_static_asm_type(ctype_type ctype)
+char *codegen_x8086_get_static_asm_type(ctype_t ctype)
 {
-    if (ctype == CT_CHAR) {
+    if (ctype.type == CT_CHAR) {
         return "db";
     } else
-    if (ctype == CT_SHORT) {
+    if (ctype.type == CT_SHORT) {
         return "dw";
     } else
-    if (ctype == CT_INT) {
+    if (ctype.type == CT_INT) {
         return "dw";
     }
     return "";
 }
 
-char *codegen_x8086_get_asm_type(ctype_type ctype)
+char *codegen_x8086_get_asm_type(ctype_t ctype)
 {
-    if (ctype == CT_CHAR) {
+    if (ctype.type == CT_CHAR) {
         return "byte";
     } else
-    if (ctype == CT_SHORT) {
+    if (ctype.type == CT_SHORT) {
         return "word";
     } else
-    if (ctype == CT_INT) {
+    if (ctype.type == CT_INT) {
         return "word";
     }
 }
 
-void codegen_x8086_get_reg(char *res, char R, ctype_type type)
+void codegen_x8086_get_reg(char *res, char R, ctype_t type)
 {
     res[0] = R;
-    if (type == CT_CHAR) {
+    if (type.type == CT_CHAR) {
         res[1] = 'l';
     } else
-    if (type == CT_SHORT || type == CT_INT){
+    if (type.type == CT_SHORT || type.type == CT_INT){
         res[1] = 'x';
     }
     res[2] = '\0';

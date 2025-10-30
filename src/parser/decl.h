@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "expr.h"
+#include "statements.h"
 
 ctype_t parser_type_parse(parser_info_t *parser, vector_token_t_t *type_slice, size_t ident_offset)
 {
@@ -193,6 +194,15 @@ void parser_namespace_parse(parser_info_t *parser, size_t start, size_t end)
     for (parser->pos = start; parser->pos < end; parser->pos++) {
         if (parser->toks->arr[parser->pos].type == TT_TYPE_NAME) {
             parser_decl_parse(parser);
+        } else
+        if (parser->toks->arr[parser->pos].type == TT_KW_RETURN) {
+            vector_token_t_t *stmt = vector_token_t_create();
+            while (parser->toks->arr[parser->pos].type != TT_SEMICOLON) {
+                vector_token_t_push_back(stmt, parser->toks->arr[parser->pos]);
+                parser->pos++;
+            }
+            parser_stmt_return_parse(parser, stmt);
+            vector_token_t_free(stmt);
         } else {
             vector_token_t_t *expr = vector_token_t_create();
             while (parser->toks->arr[parser->pos].type != TT_SEMICOLON) {

@@ -45,7 +45,7 @@ void codegen_x8086_var_decl(codegen_x8086_info_t *codegen)
                               codegen->namespaces->val->locvar_offset,
                               var_info->type);
     }
-    codegen->namespaces->val->locvar_offset += codegen_x8086_get_type_size(var_info->type.type);
+    codegen->namespaces->val->locvar_offset += codegen_x8086_get_type_size(var_info->type);
 }
 
 void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
@@ -56,34 +56,27 @@ void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
         return;
     }
     putoutcode("%s:\n", fun_info->name);
+    codegen->outcode_offset++;
     putoutcode("push bp\n", 0);
     putoutcode("mov bp, sp\n", 0);
     codegen->outcode_offset++;
 
     size_t offset = 2;
-    size_t arg_num = 0;
-    // foreach (list_ast_var_info_t_pair_t, fun_info->params) {
-    //     putoutcode("mov %s [bp - %u], %s\n",
-    //                codegen_x8086_get_asm_type(cur->val->type.type),
-    //                offset += codegen_x8086_get_type_size(cur->val->type.type),
-    //                fun_args_regs[arg_num]);
-    //     codegen_var_info_t *var_info = malloc(sizeof(codegen_var_info_t));
-    //     var_info->isstatic   = 0;
-    //     var_info->type       = fun_info->type;
-    //     var_info->rbp_offset = offset;
-    //     hashmap_codegen_var_info_t_set(var_offsets, cur->val->name, var_info);
-    //     // for (size_t o = 0; o < var_offsets->keys_top; o++) {
-    //     //     printf_s("    %s\n", var_offsets->keys[o]);
-    //     // }
-
-    //     arg_num++;
-    // }
+    foreach (list_ast_var_info_t_pair_t, fun_info->params) {
+        codegen_var_info_t *var_info = malloc(sizeof(codegen_var_info_t));
+        var_info->isstatic   = 0;
+        var_info->type       = cur->val->type;
+        var_info->rbp_offset = offset;
+        hashmap_codegen_var_info_t_set(var_offsets, cur->val->name, var_info);
+        offset += codegen_x8086_get_type_size(fun_info->type);
+    }
 
     codegen_x8086_namespace_gen(codegen, offset);
 
     codegen->outcode_offset--;
     putoutcode("pop bp\n", 0);
     putoutcode("ret\n\n", 0);
+    codegen->outcode_offset--;
 }
 
 void codegen_x8086_static_var_decl(codegen_x8086_info_t *codegen)
@@ -100,7 +93,7 @@ void codegen_x8086_static_var_decl(codegen_x8086_info_t *codegen)
     }
     putoutcode("%s %s %s\n",
                var_info->name,
-               codegen_x8086_get_static_asm_type(var_info->type.type),
+               codegen_x8086_get_static_asm_type(var_info->type),
                (char*)codegen->cur_node->childs->val->info);
 }
 #endif

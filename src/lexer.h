@@ -135,6 +135,9 @@ void lexer_buf_analis(lexer_info_t *lexer)
      || !strcmp(lexer->buf, "unsigned")
     ) {
         push_tok(TT_TYPE_NAME, lexer->buf);
+    } else
+    if (!strcmp(lexer->buf, "return")) {
+        push_tok(TT_KW_RETURN, "return");
     } else {
         push_tok(TT_IDENT, lexer->buf);
     }

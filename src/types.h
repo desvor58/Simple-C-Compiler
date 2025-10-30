@@ -118,6 +118,7 @@ typedef enum {
     TT_STR_LIT,
     TT_COMA,
     TT_SEMICOLON,
+    TT_KW_RETURN
 } token_type;
 
 typedef struct {
@@ -152,6 +153,7 @@ typedef enum {
     NT_FLOAT_LIT,
     NT_IDENT,
     NT_FUNCTION_CALL,
+    NT_STMT_RETURN,
 } ast_node_type;
 
 typedef struct {
