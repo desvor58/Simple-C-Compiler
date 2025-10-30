@@ -67,7 +67,7 @@ void codegen_x8086_eql_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root,
     }
 }
 
-void  codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, size_t dst_offset, ctype_t expected_type)
+void codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, size_t dst_offset, ctype_t expected_type)
 {
     if (root->type == NT_INT_LIT
      || root->type == NT_FLOAT_LIT
@@ -77,9 +77,19 @@ void  codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, si
         codegen_x8086_get_val(codegen, root, dst_offset, expected_type);
     } else
     if (root->type == NT_FUNCTION_CALL) {
-        putoutcode("sub sp, %u\n", codegen->namespaces->val->locvar_offset + 2);
+        ast_fun_info_t *fun_info = root->info;
+        putoutcode("sub sp, %u\n", codegen->namespaces->val->locvar_offset - 2);
+        if (list_ast_node_t_size(root->childs) > 1) {
+            size_t offset = 4;
+            size_t i = 0;
+            foreach (list_ast_node_t_pair_t, root->childs->next) {
+                codegen_x8086_expr_gen(codegen, cur->val, offset, list_ast_var_info_t_get(fun_info->params, i)->type);
+                offset += codegen_x8086_get_type_size(list_ast_var_info_t_get(fun_info->params, i)->type);
+                i++;
+            }
+        }
         putoutcode("call %s\n", root->childs->val->info);
-        putoutcode("add sp, %u\n", codegen->namespaces->val->locvar_offset + 2);
+        putoutcode("add sp, %u\n", codegen->namespaces->val->locvar_offset - 2);
         putoutcode("mov %s [bp - %u], ax\n", codegen_x8086_get_asm_type(expected_type), dst_offset);
     } else
     if (root->type == NT_BOP) {

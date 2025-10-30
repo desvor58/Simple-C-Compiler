@@ -5,6 +5,6 @@ int foo(int num1, int num2)
 
 int main()
 {
-    int var1 = some_fun() + 1;
-    int var2 = 0;
+    int var0 = 8;
+    int var1 = foo(5, 7);
 }

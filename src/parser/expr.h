@@ -26,7 +26,9 @@ void parser_parse_bop(parser_info_t *parser, size_t bop_pos, vector_token_t_t *e
     //     printf_s("    type:%u val:%s\n", expr->arr[i].type, expr->arr[i].val);
     // }
     if (expr->arr[bop_pos].type == TT_LPARENT) {
-        parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_FUNCTION_CALL, (void*)0));
+        ast_fun_info_t *fun_info = malloc(sizeof(ast_fun_info_t));
+        *fun_info = *hashmap_ast_fun_info_t_get(fun_infos, expr->arr[bop_pos - 1].val);
+        parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_FUNCTION_CALL, fun_info));
         ast_node_add_child(parser->cur_node, gen_ast_node(NT_IDENT, stralc(expr->arr[bop_pos - 1].val)));
         
         size_t i = bop_pos + 1;

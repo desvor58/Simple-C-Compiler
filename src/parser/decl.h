@@ -129,7 +129,8 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
         }
         rparent_offset++;
     }
-    parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_FUNCTION_DECL, (void*)fun_info));
+    parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_FUNCTION_DECL, fun_info));
+    hashmap_ast_fun_info_t_set(fun_infos, fun_info->name, fun_info);
 
     if (parser->toks->arr[parser->pos + rparent_offset + 1].type == TT_LBRACKET) {
         size_t skip_rb = 0;
