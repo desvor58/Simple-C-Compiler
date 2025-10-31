@@ -74,7 +74,7 @@ void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
         var_info->type       = cur->val->type;
         var_info->rbp_offset = offset;
         hashmap_codegen_var_info_t_set(var_offsets, cur->val->name, var_info);
-        offset += codegen_x8086_get_type_size(fun_info->type);
+        offset += codegen_x8086_get_type_size(var_info->type);
     }
 
     codegen_x8086_namespace_gen(codegen, offset);

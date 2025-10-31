@@ -10,7 +10,7 @@
 #define HASHMAP_BUCKIT_NUM   64
 #define MAX_HASHMAP_KEYS_BUF 1024
 
-#define VERSION "SCC by Desvor v0.0.666"
+#define VERSION "SCC by Desvor v0.0.777"
 #define HELP_MENU                                                                                    \
     "usage: scc [options] <C code file name>"                                                        \
     "options:\n"                                                                                     \
