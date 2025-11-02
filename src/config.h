@@ -10,20 +10,20 @@
 #define HASHMAP_BUCKIT_NUM   64
 #define MAX_HASHMAP_KEYS_BUF 1024
 
-#define VERSION "SCC by Desvor v0.0.777"
-#define HELP_MENU                                                                                    \
-    "usage: scc [options] <C code file name>"                                                        \
-    "options:\n"                                                                                     \
-    "    -E                    Put translation unit after preprocessing\n"                           \
-    "    -S                    Put translation unit after code generation to a.s file\n"             \
-    "    -T                    Put the tokens\n"                                                     \
-    "    -A                    Put AST\n"                                                            \
-    "    -c                    Stop compiling after assembling and do not link\n"                    \
-    "    -o <file>             Put the output into <file>\n"                                         \
-    "    -e <function name>    Set entry function to <function name>\n"                              \
-    "    -v                    Put version of prcc\n"                                                \
-    "    -t <target_platform>  Set target platform to compiling\n"                                   \
-    "        win64             Windows 64bits\n"                                                     \
-    "        i8086             raw binnary file with code for processors >= Intel 8086\n"            \
+#define VERSION "SCC by Desvor v0.0.POLNAYA_PIZDA!"
+#define HELP_MENU                                                                          \
+    "usage: scc <C code file name> [options]"                                              \
+    "options:\n"                                                                           \
+    "    -E                    Put translation unit after preprocessing\n"                 \
+    "    -S                    Put translation unit after code generation to a.s file\n"   \
+    "    -T                    Put the tokens\n"                                           \
+    "    -A                    Put AST\n"                                                  \
+    "    -c                    Stop compiling after assembling and do not link\n"          \
+    "    -o <file>             Put the output into <file>\n"                               \
+    "    -e <function name>    Set entry function to <function name>\n"                    \
+    "    -v                    Put version of prcc\n"                                      \
+    "    -t <target_platform>  Set target platform to compiling\n"                         \
+    "        win64             Windows 64bits\n"                                           \
+    "        i8086             raw binnary file with code for processors >= Intel 8086\n"  \
 
 #endif
