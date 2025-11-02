@@ -10,10 +10,11 @@ ctype_t parser_type_parse(parser_info_t *parser, vector_token_t_t *type_slice, s
     ctype_t type = {0};
     type.modifires_top = 0;
     if (type_slice->arr[0].type != TT_TYPE_NAME) {
-        vector_error_t_push_back(parser->err_stk, gen_error("Expected type name",
-                                                    parser->args.infile_name,
-                                                    type_slice->arr[0].line_ref,
-                                                    type_slice->arr[0].chpos_ref));
+        generr(parser->err_stk,
+               "Expected type name",
+               parser->args.infile_name,
+               type_slice->arr[0].line_ref,
+               type_slice->arr[0].chpos_ref);
         return (ctype_t){0};
     }
 
@@ -71,6 +72,14 @@ void parser_var_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
         vector_token_t_t *expr = vector_token_t_create();
         for (size_t i = se_offset + 1; parser->toks->arr[parser->pos + i].type != TT_SEMICOLON; i++) {
             vector_token_t_push_back(expr, parser->toks->arr[parser->pos + i]);
+            if (parser->pos + i + 1 == parser->toks->size) {
+                generr(parser->err_stk,
+                       "expected `;`",
+                       parser->args.infile_name,
+                       parser->toks->arr[parser->pos + i].line_ref,
+                       parser->toks->arr[parser->pos + i].chpos_ref);
+                return;
+            }
         }
         if (expr->size == 1) {
             parser_get_val(parser, expr);
@@ -81,10 +90,11 @@ void parser_var_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
     } else
     if (parser->toks->arr[parser->pos + se_offset].type == TT_SEMICOLON) {
     } else {
-        vector_error_t_push_back(parser->err_stk, gen_error("expected `=`, `;` or `(`",
-                                                    parser->args.infile_name,
-                                                    parser->toks->arr[parser->pos + 1].line_ref,
-                                                    parser->toks->arr[parser->pos + 1].chpos_ref));
+        generr(parser->err_stk,
+               "expected `=`, `;` or `(`",
+               parser->args.infile_name,
+               parser->toks->arr[parser->pos + 1].line_ref,
+               parser->toks->arr[parser->pos + 1].chpos_ref);
     }
     while (parser->toks->arr[++parser->pos].type != TT_SEMICOLON) {}
     parser->cur_node = ast_acc;
@@ -102,10 +112,11 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
     size_t rparent_offset = se_offset + 1;
     while (parser->toks->arr[parser->pos + rparent_offset].type != TT_RPARENT) {
         if (parser->toks->arr[parser->pos + rparent_offset].type != TT_TYPE_NAME) {
-            vector_error_t_push_back(parser->err_stk, gen_error("Expected argument type",
-                                                        parser->args.infile_name,
-                                                        parser->toks->arr[parser->pos + rparent_offset].line_ref,
-                                                        parser->toks->arr[parser->pos + rparent_offset].chpos_ref));
+            generr(parser->err_stk,
+                   "Expected argument type",
+                   parser->args.infile_name,
+                   parser->toks->arr[parser->pos + rparent_offset].line_ref,
+                   parser->toks->arr[parser->pos + rparent_offset].chpos_ref);
             return;
         }
         vector_token_t_t *arg_slice = vector_token_t_create();
@@ -153,18 +164,19 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
     parser->cur_node = ast_acc;
 }
 
-void parser_decl_parse(parser_info_t *parser)
+int parser_decl_parse(parser_info_t *parser)
 {
     vector_token_t_t *type_slice = vector_token_t_create();
     size_t ident_offset = 0;
     while (parser->toks->arr[parser->pos + ident_offset].type != TT_IDENT) {
         vector_token_t_push_back(type_slice, parser->toks->arr[parser->pos + ident_offset]);
         if (parser->pos + ++ident_offset == parser->toks->size) {
-            vector_error_t_push_back(parser->err_stk, gen_error("expected identifire",
-                                                        parser->args.infile_name,
-                                                        parser->toks->arr[parser->pos + 1].line_ref,
-                                                        parser->toks->arr[parser->pos + 1].chpos_ref));
-            return;
+            generr(parser->err_stk,
+                   "expected identifire",
+                   parser->args.infile_name,
+                   parser->toks->arr[parser->pos + ident_offset - 2].line_ref,
+                   parser->toks->arr[parser->pos + ident_offset - 2].chpos_ref);
+            return 1;
         }
     }
     token_t ident = parser->toks->arr[parser->pos + ident_offset];
@@ -173,9 +185,17 @@ void parser_decl_parse(parser_info_t *parser)
     size_t se_offset = ident_offset + 1;
     while (parser->toks->arr[parser->pos + se_offset].type != TT_EQ
         && parser->toks->arr[parser->pos + se_offset].type != TT_LPARENT
+        && parser->toks->arr[parser->pos + se_offset].type != TT_SEMICOLON
     ) {
         vector_token_t_push_back(type_slice, parser->toks->arr[parser->pos + se_offset]);
-        se_offset++;
+        if (parser->pos + ++se_offset == parser->toks->size) {
+            generr(parser->err_stk,
+                   "expected `=`, `;` or `(`",
+                   parser->args.infile_name,
+                   parser->toks->arr[parser->pos + se_offset - 2].line_ref,
+                   parser->toks->arr[parser->pos + se_offset - 2].chpos_ref);
+            return 1;
+        }
     }
 
     ctype_t type = parser_type_parse(parser, type_slice, ident_offset);
@@ -188,13 +208,17 @@ void parser_decl_parse(parser_info_t *parser)
     } else {
         parser_var_decl_parse(parser, ident_offset, se_offset, type, ident);
     }
+    return 0;
 }
 
 void parser_namespace_parse(parser_info_t *parser, size_t start, size_t end)
 {
     for (parser->pos = start; parser->pos < end; parser->pos++) {
         if (parser->toks->arr[parser->pos].type == TT_TYPE_NAME) {
-            parser_decl_parse(parser);
+            int err = parser_decl_parse(parser);
+            if (err) {
+                return;
+            }
         } else
         if (parser->toks->arr[parser->pos].type == TT_KW_RETURN) {
             vector_token_t_t *stmt = vector_token_t_create();

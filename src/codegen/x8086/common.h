@@ -6,7 +6,7 @@
 #include "../codegen_common.h"
 
 typedef struct {
-    vector_error_t_t                     *err_stk;
+    list_error_t_pair_t                  *err_stk;
     args_t                                args;
     ast_node_t                           *ast_root;
     ast_node_t                           *cur_node;
@@ -21,7 +21,7 @@ void codegen_x8086_static_var_decl(codegen_x8086_info_t *codegen);
 void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen);
 void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_start);
 
-codegen_x8086_info_t *codegen_x8086_create(vector_error_t_t *err_stk, args_t args, ast_node_t *ast)
+codegen_x8086_info_t *codegen_x8086_create(list_error_t_pair_t *err_stk, args_t args, ast_node_t *ast)
 {
     codegen_x8086_info_t *codegen = malloc(sizeof(codegen_x8086_info_t));
     codegen->err_stk = err_stk;

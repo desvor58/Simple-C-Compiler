@@ -19,7 +19,7 @@ vector_##Ty##_t *vector_##Ty##_create()  \
 }  \
 void __vector_##Ty##_realoc(vector_##Ty##_t *vec)  \
 {  \
-    Ty *new_arr = (Ty*)malloc(sizeof(Ty) * (vec->aloc_size + ExSz));  \
+    Ty *new_arr = (Ty*)malloc(sizeof(Ty) * (vec->aloc_size += ExSz));  \
     for (size_t i = 0; i < vec->size; i++) {  \
         new_arr[i] = vec->arr[i];  \
     }  \

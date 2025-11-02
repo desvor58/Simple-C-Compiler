@@ -54,7 +54,11 @@ void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen)
 {
     ast_fun_info_t *fun_info = (ast_fun_info_t*)codegen->cur_node->info;
     if (!fun_info) {
-        vector_error_t_push_back(codegen->err_stk, gen_error("fun declaration node havent ast_fun_info", codegen->args.infile_name, 0, 0));
+        generr(codegen->err_stk,
+               "fun declaration node havent ast_fun_info",
+               codegen->args.infile_name,
+               0,
+               0);
         return;
     }
     putoutcode("%s:\n", fun_info->name);
@@ -97,7 +101,11 @@ void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen)
     cginfo->type = var_info->type;
     hashmap_codegen_var_info_t_set(var_offsets, var_info->name, cginfo);
     if (!var_info) {
-        vector_error_t_push_back(codegen->err_stk, gen_error("var declaration node havent ast_var_info", codegen->args.infile_name, 0, 0));
+        generr(codegen->err_stk,
+               "var declaration node havent ast_var_info",
+               codegen->args.infile_name,
+               0,
+               0);
         return;
     }
     putoutcode("%s %s %s\n",

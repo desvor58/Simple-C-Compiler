@@ -18,14 +18,14 @@
 string_t *code;
 args_t    args;
 
-static vector_error_t_t *err_stk;
+static list_error_t_pair_t *err_stk;
 
 void check_errs()
 {
-    for (int i = 0; i < err_stk->size; i++) {
-        put_error(err_stk->arr[i], 0);
+    for (int i = 0; i < list_error_t_size(err_stk); i++) {
+        put_error(*list_error_t_get(err_stk, i), 0);
     }
-    if (err_stk->size) {
+    if (list_error_t_size(err_stk)) {
         exit(1);
     }
 }
@@ -58,7 +58,7 @@ void ast_print(ast_node_t *node, int tab)
 
 int main(int argc, char **argv)
 {
-    err_stk = vector_error_t_create();
+    err_stk = list_error_t_create();
 
     code = string_create();
 
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     fclose(infile);
 
     /* --- preprocess --- */
-        preproc_info_t *preproc = preproc_create(args, code->str, args.infile_name);
+        preproc_info_t *preproc = preproc_create(err_stk, args, code->str, args.infile_name);
         preprocess(preproc);
         preproc_delete(preproc);
         if (args.flags & ARGS_FLG_PREPROC_STOP) {
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     /* ------------------------------------- */
 
     /* --- parsing --- */
-        parser_info_t *parser = parser_create(args, toks, args.infile_name);
+        parser_info_t *parser = parser_create(err_stk, args, toks, args.infile_name);
         parse(parser);
         if (args.flags & ARGS_FLG_AST_PUT) {
             ast_print(parser->ast_root, 0);
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 
         /* --- codegen --- */
             if (args.target == TRGT_x8664_WIN) {
-                codegen_x8664_win_info_t *codegen = codegen_x8664_win_create(args, parser->ast_root);
+                codegen_x8664_win_info_t *codegen = codegen_x8664_win_create(err_stk, args, parser->ast_root);
 
                 codegen_x8664_win(codegen);
                 if (args.flags & ARGS_FLG_ASM_STOP) {
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 
     check_errs();
 
-    free(err_stk);
+    list_error_t_free(err_stk);
     string_free(code);
     return 0;
 }

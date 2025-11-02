@@ -6,7 +6,7 @@
 #include "../codegen_common.h"
 
 typedef struct {
-    vector_error_t_t                     *err_stk;
+    list_error_t_pair_t                  *err_stk;
     args_t                                args;
     ast_node_t                           *ast_root;
     ast_node_t                           *cur_node;
@@ -20,9 +20,10 @@ void codegen_x8664_win_static_var_decl(codegen_x8664_win_info_t *codegen);
 void codegen_x8664_win_fun_decl(codegen_x8664_win_info_t *codegen);
 void codegen_x8664_win_namespace_gen(codegen_x8664_win_info_t *codegen, size_t locvar_start);
 
-codegen_x8664_win_info_t *codegen_x8664_win_create(args_t args, ast_node_t *ast)
+codegen_x8664_win_info_t *codegen_x8664_win_create(list_error_t_pair_t *err_stk, args_t args, ast_node_t *ast)
 {
     codegen_x8664_win_info_t *codegen = (codegen_x8664_win_info_t*)malloc(sizeof(codegen_x8664_win_info_t));
+    codegen->err_stk = err_stk;
     codegen->args = args;
     codegen->ast_root = ast;
     codegen->cur_node = ast;

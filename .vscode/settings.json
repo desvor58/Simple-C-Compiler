@@ -17,6 +17,12 @@
         "codegen_x8664_win_expr.h": "c",
         "codegen_x8664_win_types.h": "c",
         "expr.h": "c",
-        "common.h": "c"
+        "common.h": "c",
+        "format": "c",
+        "initializer_list": "c",
+        "utility": "c",
+        "vector": "c",
+        "xstring": "c",
+        "xtree": "c"
     }
 }

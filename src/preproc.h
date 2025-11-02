@@ -5,6 +5,7 @@
 #include "types/hashmap.h"
 
 typedef struct {
+    list_error_t_pair_t *err_stk;
     args_t args;
     char  *text;
     char  *buf;
@@ -14,16 +15,17 @@ typedef struct {
     size_t chpos;
 } preproc_info_t;
 
-preproc_info_t *preproc_create(args_t args, char *text, char *file)
+preproc_info_t *preproc_create(list_error_t_pair_t *err_stk, args_t args, char *text, char *file)
 {
     preproc_info_t *preproc = malloc(sizeof(preproc_info_t));
-    preproc->args  = args;
-    preproc->text  = text;
-    preproc->buf   = malloc(sizeof(char)*MAX_MACRO_VAL);
-    preproc->pos   = 0;
-    preproc->file  = file;
-    preproc->line  = 1;
-    preproc->chpos = 0;
+    preproc->err_stk = err_stk;
+    preproc->args    = args;
+    preproc->text    = text;
+    preproc->buf     = malloc(sizeof(char)*MAX_MACRO_VAL);
+    preproc->pos     = 0;
+    preproc->file    = file;
+    preproc->line    = 1;
+    preproc->chpos   = 0;
     return preproc;
 }
 
@@ -43,8 +45,6 @@ void prerpoc_derective_undef(preproc_info_t *preproc, size_t start_pos);
 genhashmap(macro_info_t)
 
 hashmap_macro_info_t_t *macros = 0;
-
-static vector_error_t_t *err_stk;
 
 void preprocess(preproc_info_t *preproc)
 {
@@ -84,10 +84,11 @@ void preprocess(preproc_info_t *preproc)
             if (!strcmp(preproc->buf, "#undef")) {
                 prerpoc_derective_undef(preproc, start_pos);
             } else {
-                vector_error_t_push_back(err_stk, gen_error("Unknow preprocessor derective",
-                                                            preproc->file,
-                                                            preproc->line,
-                                                            preproc->chpos));
+                generr(preproc->err_stk,
+                       "Unknow preprocessor derective",
+                       preproc->file,
+                       preproc->line,
+                       preproc->chpos);
             }
             preproc->pos--;
         } else
@@ -100,9 +101,9 @@ void preprocess(preproc_info_t *preproc)
                 int err = buf_replace(preproc->text, MAX_CODE_SIZE, start_pos, preproc->pos, macro->val);
                 if (err) {
                     put_error(gen_error("too large translation unit",
-                                        preproc->file,
-                                        preproc->line,
-                                        preproc->chpos), 1);
+                                      preproc->file,
+                                      preproc->line,
+                                      preproc->chpos), 1);
                 }
                 preproc->pos = start_pos;
             }
@@ -134,16 +135,18 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         fopen_s(&included_file, full_path, "r");
         free(full_path);
         if (!included_file) {
-            vector_error_t_push_back(err_stk, gen_error("No such included file",
-                                                        preproc->file, preproc->line,
-                                                        preproc->chpos));
+            generr(preproc->err_stk,
+                   "No such included file",
+                   preproc->file,
+                   preproc->line,
+                   preproc->chpos);
             return;
         }
         string_t *included_code = string_create();
         get_file_text(included_file, included_code);
         fclose(included_file);
 
-        preproc_info_t *_preproc = preproc_create(preproc->args, included_code->str, preproc->file);
+        preproc_info_t *_preproc = preproc_create(preproc->err_stk, preproc->args, included_code->str, preproc->file);
         
         preprocess(_preproc);
         preproc_delete(_preproc);
@@ -198,10 +201,11 @@ void prerpoc_derective_undef(preproc_info_t *preproc, size_t start_pos)
     preproc_gettok(preproc);
     int err = hashmap_macro_info_t_delete(macros, preproc->buf);
     if (err) {
-        vector_error_t_push_back(err_stk, gen_error("unknow identifire",
-                                                    preproc->file,
-                                                    preproc->line,
-                                                    preproc->chpos));
+        generr(preproc->err_stk,
+               "unknow identifire",
+               preproc->file,
+               preproc->line,
+               preproc->chpos);
     }
     err = buf_replace(preproc->text, MAX_CODE_SIZE, start_pos, preproc->pos + 1, "\n");
     if (err) {

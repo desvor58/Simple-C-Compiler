@@ -48,7 +48,12 @@ typedef struct {
     size_t      chpos;
 } error_t;
 
-genvector(error_t, 8);
+genlist(error_t);
+
+#define generr(err_stk, msg, file, line, chpos)  \
+    error_t *err = malloc(sizeof(error_t));  \
+    *err = gen_error(msg, file, line, chpos);  \
+    list_error_t_add(err_stk, err);
 
 error_t gen_error(const char *msg, char *file, size_t line, size_t chpos)
 {

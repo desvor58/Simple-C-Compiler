@@ -4,12 +4,12 @@
 #include "../types.h"
 
 typedef struct {
-    vector_error_t_t *err_stk;
-    args_t            args;
-    vector_token_t_t *toks;
-    ast_node_t       *ast_root;
-    ast_node_t       *cur_node;
-    size_t            pos;
+    list_error_t_pair_t *err_stk;
+    args_t               args;
+    vector_token_t_t    *toks;
+    ast_node_t          *ast_root;
+    ast_node_t          *cur_node;
+    size_t               pos;
 } parser_info_t;
 
 genhashmap(ast_fun_info_t);
@@ -17,12 +17,13 @@ genhashmap(ast_fun_info_t);
 hashmap_ast_fun_info_t_t *fun_infos;
 
 void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr);
-void parser_decl_parse(parser_info_t *parser);
+int parser_decl_parse(parser_info_t *parser);
 void parser_namespace_parse(parser_info_t *parser, size_t start, size_t end);
 
-parser_info_t *parser_create(args_t args, vector_token_t_t *toks, char *file)
+parser_info_t *parser_create(list_error_t_pair_t *err_stk, args_t args, vector_token_t_t *toks, char *file)
 {
     parser_info_t *parser = malloc(sizeof(parser_info_t));
+    parser->err_stk       = err_stk;
     parser->args          = args;
     parser->toks          = toks;
     parser->ast_root      = gen_ast_node(NT_TRANSLATION_UNIT, (void*)0);
