@@ -19,12 +19,23 @@ void parser_get_val(parser_info_t *parser, vector_token_t_t *expr)
     }
 }
 
-void parser_parse_bop(parser_info_t *parser, size_t bop_pos, vector_token_t_t *expr)
+int parser_parse_bop(parser_info_t *parser, size_t bop_pos, vector_token_t_t *expr)
 {
     // printf_s("parsing bop:\n");
     // for (int i = 0; i < expr->size; i++) {
-    //     printf_s("    type:%u val:%s\n", expr->arr[i].type, expr->arr[i].val);
+    //     printf_s("    type:%u val:%s", expr->arr[i].type, expr->arr[i].val);
+    //     if (i == bop_pos) {
+    //         printf_s("  <- bop_pos");
+    //     }
+    //     putchar('\n');
     // }
+    if (bop_pos == 0 || (
+        expr->arr[bop_pos - 1].type != TT_IDENT
+     && expr->arr[bop_pos - 1].type != TT_INT_LIT
+     && expr->arr[bop_pos - 1].type != TT_STR_LIT
+     && expr->arr[bop_pos - 1].type != TT_FLOAT_LIT)) {
+        return 1;
+    }
     if (expr->arr[bop_pos].type == TT_LPARENT) {
         ast_fun_info_t *fun_info = malloc(sizeof(ast_fun_info_t));
         *fun_info = *hashmap_ast_fun_info_t_get(fun_infos, expr->arr[bop_pos - 1].val);
@@ -64,7 +75,7 @@ void parser_parse_bop(parser_info_t *parser, size_t bop_pos, vector_token_t_t *e
             vector_token_t_free(arg_expr);
         }
 
-        return;
+        return 0;
     }
     vector_token_t_t *ex1 = vector_token_t_create();
     vector_token_t_t *ex2 = vector_token_t_create();
@@ -81,15 +92,51 @@ void parser_parse_bop(parser_info_t *parser, size_t bop_pos, vector_token_t_t *e
 
     vector_token_t_free(ex1);
     vector_token_t_free(ex2);
+    return 0;
 }
 
-static token_type op_parse_stack[] = {
-    TT_EQ,
-    TT_PLUS,
-    TT_MINUS,
-    TT_STAR,
-    TT_SLASH,
-    TT_LPARENT
+int parser_parse_uop(parser_info_t *parser, size_t uop_pos, vector_token_t_t *expr)
+{
+    // printf_s("parsing uop:\n");
+    // for (int i = 0; i < expr->size; i++) {
+    //     printf_s("    type:%u val:%s", expr->arr[i].type, expr->arr[i].val);
+    //     if (i == uop_pos) {
+    //         printf_s("  <- bop_pos");
+    //     }
+    //     putchar('\n');
+    // }
+    vector_token_t_t *ex = vector_token_t_create();
+    parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_UOP, stralc(expr->arr[uop_pos].val)));
+    for (size_t j = uop_pos + 1; j < expr->size; j++) {
+        vector_token_t_push_back(ex, expr->arr[j]);
+    }
+
+    parser_expr_parse(parser, ex);
+
+    vector_token_t_free(ex);
+    return 0;
+}
+
+typedef enum {
+    OT_BOP,
+    OT_UOP
+} op_type;
+
+typedef struct {
+    token_type tt;
+    op_type    type;
+    int      (*handler)(parser_info_t*, size_t, vector_token_t_t*);
+} op_info_t;
+
+static op_info_t op_parse_stack[] = {
+    {TT_EQ,      OT_BOP, parser_parse_bop},
+    {TT_PLUS,    OT_BOP, parser_parse_bop},
+    {TT_MINUS,   OT_BOP, parser_parse_bop},
+    {TT_STAR,    OT_BOP, parser_parse_bop},
+    {TT_SLASH,   OT_BOP, parser_parse_bop},
+    {TT_PLUS,    OT_UOP, parser_parse_uop},
+    {TT_MINUS,   OT_UOP, parser_parse_uop},
+    {TT_LPARENT, OT_BOP, parser_parse_bop}
 };
 
 void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
@@ -131,13 +178,16 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
     }
     ast_node_t *ast_acc = parser->cur_node;
     
-    size_t bop_type_i = 0;
-    while (bop_type_i < sizeof(op_parse_stack) / sizeof(*op_parse_stack)) {
+    size_t op_type_i = 0;
+    while (op_type_i < sizeof(op_parse_stack) / sizeof(*op_parse_stack)) {
         size_t i = 0;
-        while (i < expr->size) {
-            if (expr->arr[i].type == op_parse_stack[bop_type_i]) {
-                parser_parse_bop(parser, i, expr);
-                goto bop_parse_end;
+        for (;i < expr->size; i++) {
+            if (expr->arr[i].type == op_parse_stack[op_type_i].tt) {
+                int res = op_parse_stack[op_type_i].handler(parser, i, expr);
+                if (res) {
+                    continue;
+                }
+                goto op_parse_end;
             }
             if (expr->arr[i].type == TT_LPARENT) {
                 i++;
@@ -157,11 +207,10 @@ void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
                 }
 lparent_parse_end:
             }
-            i++;
         }
-        bop_type_i++;
+        op_type_i++;
     }
-bop_parse_end:
+op_parse_end:
 
     parser->cur_node = ast_acc;
 }

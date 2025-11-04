@@ -81,6 +81,10 @@ void parser_var_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
                 return;
             }
         }
+        // printf_s("expr:\n");
+        // for (int i = 0; i < expr->size; i++) {
+        //     printf_s("    type:%u val:%s\n", expr->arr[i].type, expr->arr[i].val);
+        // }
         if (expr->size == 1) {
             parser_get_val(parser, expr);
         } else {
@@ -164,7 +168,7 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
     parser->cur_node = ast_acc;
 }
 
-int parser_decl_parse(parser_info_t *parser)
+void parser_decl_parse(parser_info_t *parser)
 {
     vector_token_t_t *type_slice = vector_token_t_create();
     size_t ident_offset = 0;
@@ -176,7 +180,7 @@ int parser_decl_parse(parser_info_t *parser)
                    parser->args.infile_name,
                    parser->toks->arr[parser->pos + ident_offset - 2].line_ref,
                    parser->toks->arr[parser->pos + ident_offset - 2].chpos_ref);
-            return 1;
+            return;
         }
     }
     token_t ident = parser->toks->arr[parser->pos + ident_offset];
@@ -194,7 +198,7 @@ int parser_decl_parse(parser_info_t *parser)
                    parser->args.infile_name,
                    parser->toks->arr[parser->pos + se_offset - 2].line_ref,
                    parser->toks->arr[parser->pos + se_offset - 2].chpos_ref);
-            return 1;
+            return;
         }
     }
 
@@ -208,17 +212,14 @@ int parser_decl_parse(parser_info_t *parser)
     } else {
         parser_var_decl_parse(parser, ident_offset, se_offset, type, ident);
     }
-    return 0;
+    return;
 }
 
 void parser_namespace_parse(parser_info_t *parser, size_t start, size_t end)
 {
     for (parser->pos = start; parser->pos < end; parser->pos++) {
         if (parser->toks->arr[parser->pos].type == TT_TYPE_NAME) {
-            int err = parser_decl_parse(parser);
-            if (err) {
-                return;
-            }
+            parser_decl_parse(parser);
         } else
         if (parser->toks->arr[parser->pos].type == TT_KW_RETURN) {
             vector_token_t_t *stmt = vector_token_t_create();

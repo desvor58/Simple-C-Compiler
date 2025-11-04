@@ -153,6 +153,15 @@ void codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, siz
                     codegen_x8086_get_asm_type(expected_type),
                     dst_offset,
                     reg);
+    } else
+    if (root->type == NT_UOP) {
+        codegen_x8086_expr_gen(codegen,
+                               root->childs->val,
+                               dst_offset,
+                               expected_type);
+        if (!strcmp(root->info, "-")) {
+            putoutcode("neg %s [bp - %u]\n", codegen_x8086_get_asm_type(expected_type), dst_offset);
+        }
     }
 }
 

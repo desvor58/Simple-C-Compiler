@@ -77,18 +77,21 @@ void lex_text(lexer_info_t *lexer)
             push_tok(TT_PLUS, "+");
         } else
         if (lexer->text[lexer->pos] == '-') {
-            if (lexer->toks->arr[lexer->toks->size - 1].type != TT_IDENT
-             && lexer->toks->arr[lexer->toks->size - 1].type != TT_INT_LIT
-             && lexer->toks->arr[lexer->toks->size - 1].type != TT_STR_LIT
-             && lexer->toks->arr[lexer->toks->size - 1].type != TT_FLOAT_LIT
-             && lexer->toks->arr[lexer->toks->size - 1].type != TT_RPARENT) {
+            if (lexer->toks->arr[lexer->pos - 1].type != TT_IDENT
+             && lexer->toks->arr[lexer->pos - 1].type != TT_INT_LIT
+             && lexer->toks->arr[lexer->pos - 1].type != TT_STR_LIT
+             && lexer->toks->arr[lexer->pos - 1].type != TT_FLOAT_LIT
+             && lexer->toks->arr[lexer->pos - 1].type != TT_RPARENT
+            ) {
                 lexer->buf[0] = '-';
-                while (lexer->text[++lexer->pos] == ' ') {}
+                lexer->pos++;
+                while (lexer->text[lexer->pos] == ' ') {lexer->pos++;}
                 if (isdigit(lexer->text[lexer->pos])) {
                     lexer_digit_parse(lexer, 1);
                     lexer->pos--;
+                    continue;
                 }
-                continue;
+                lexer->pos--;
             }
             push_tok(TT_MINUS, "-");
         } else

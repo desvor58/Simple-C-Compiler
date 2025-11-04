@@ -56,6 +56,9 @@ hashmap_codegen_var_info_t_t *var_offsets;
 
 size_t codegen_x8086_get_type_size(ctype_t ctype)
 {
+    if (ctype.modifires[0] == CTM_POINTER) {
+        return 2;
+    }
     if (ctype.type == CT_CHAR) {
         return 1;
     } else
@@ -70,6 +73,9 @@ size_t codegen_x8086_get_type_size(ctype_t ctype)
 
 char *codegen_x8086_get_static_asm_type(ctype_t ctype)
 {
+    if (ctype.modifires[0] == CTM_POINTER) {
+        return "dw";
+    }
     if (ctype.type == CT_CHAR) {
         return "db";
     } else
@@ -84,6 +90,9 @@ char *codegen_x8086_get_static_asm_type(ctype_t ctype)
 
 char *codegen_x8086_get_asm_type(ctype_t ctype)
 {
+    if (ctype.modifires[0] == CTM_POINTER) {
+        return "word";
+    }
     if (ctype.type == CT_CHAR) {
         return "byte";
     } else
@@ -100,8 +109,8 @@ void codegen_x8086_get_reg(char *res, char R, ctype_t type)
     res[0] = R;
     if (type.type == CT_CHAR) {
         res[1] = 'l';
-    } else
-    if (type.type == CT_SHORT || type.type == CT_INT){
+    }
+    if (type.type == CT_SHORT || type.type == CT_INT || type.modifires[0] == CTM_POINTER){
         res[1] = 'x';
     }
     res[2] = '\0';
