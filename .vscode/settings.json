@@ -23,6 +23,21 @@
         "utility": "c",
         "vector": "c",
         "xstring": "c",
-        "xtree": "c"
+        "xtree": "c",
+        "atomic": "c",
+        "bit": "c",
+        "charconv": "c",
+        "compare": "c",
+        "cstddef": "c",
+        "iterator": "c",
+        "limits": "c",
+        "memory": "c",
+        "system_error": "c",
+        "type_traits": "c",
+        "xlocale": "c",
+        "xlocbuf": "c",
+        "xlocmon": "c",
+        "xloctime": "c",
+        "xmemory": "c"
     }
 }

@@ -112,6 +112,7 @@ typedef enum {
     TT_MINUS,
     TT_STAR,
     TT_SLASH,
+    TT_AMPERSAND,
     TT_LPARENT,
     TT_RPARENT,
     TT_LBRACKET,

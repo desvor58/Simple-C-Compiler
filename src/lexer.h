@@ -77,11 +77,11 @@ void lex_text(lexer_info_t *lexer)
             push_tok(TT_PLUS, "+");
         } else
         if (lexer->text[lexer->pos] == '-') {
-            if (lexer->toks->arr[lexer->pos - 1].type != TT_IDENT
-             && lexer->toks->arr[lexer->pos - 1].type != TT_INT_LIT
-             && lexer->toks->arr[lexer->pos - 1].type != TT_STR_LIT
-             && lexer->toks->arr[lexer->pos - 1].type != TT_FLOAT_LIT
-             && lexer->toks->arr[lexer->pos - 1].type != TT_RPARENT
+            if (lexer->toks->arr[lexer->toks->size - 1].type != TT_IDENT
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_INT_LIT
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_STR_LIT
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_FLOAT_LIT
+             && lexer->toks->arr[lexer->toks->size - 1].type != TT_RPARENT
             ) {
                 lexer->buf[0] = '-';
                 lexer->pos++;
@@ -103,6 +103,9 @@ void lex_text(lexer_info_t *lexer)
         } else
         if (lexer->text[lexer->pos] == ',') {
             push_tok(TT_COMA, ",");
+        } else
+        if (lexer->text[lexer->pos] == '&') {
+            push_tok(TT_AMPERSAND, "&");
         } else
         if (isalpha(lexer->text[lexer->pos]) || lexer->text[lexer->pos] == '_') {
             lexer_alpha_parse(lexer);

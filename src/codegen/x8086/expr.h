@@ -155,12 +155,25 @@ void codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, siz
                     reg);
     } else
     if (root->type == NT_UOP) {
+        if (!strcmp(root->info, "&")) {
+            if (root->childs->val->type != NT_IDENT) {
+                puts("codegen fatal error: expected ident after &");
+                exit(1);
+            }
+            putoutcode("mov %s [bp - %u], bp - %u\n",
+                       codegen_x8086_get_asm_type(expected_type),
+                       dst_offset,
+                       hashmap_codegen_var_info_t_get(var_offsets, root->childs->val->info)->rbp_offset);
+            return;
+        }
         codegen_x8086_expr_gen(codegen,
                                root->childs->val,
                                dst_offset,
                                expected_type);
         if (!strcmp(root->info, "-")) {
-            putoutcode("neg %s [bp - %u]\n", codegen_x8086_get_asm_type(expected_type), dst_offset);
+            putoutcode("neg %s [bp - %u]\n",
+                       codegen_x8086_get_asm_type(expected_type),
+                       dst_offset);
         }
     }
 }

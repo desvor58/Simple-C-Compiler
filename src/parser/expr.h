@@ -129,14 +129,15 @@ typedef struct {
 } op_info_t;
 
 static op_info_t op_parse_stack[] = {
-    {TT_EQ,      OT_BOP, parser_parse_bop},
-    {TT_PLUS,    OT_BOP, parser_parse_bop},
-    {TT_MINUS,   OT_BOP, parser_parse_bop},
-    {TT_STAR,    OT_BOP, parser_parse_bop},
-    {TT_SLASH,   OT_BOP, parser_parse_bop},
-    {TT_PLUS,    OT_UOP, parser_parse_uop},
-    {TT_MINUS,   OT_UOP, parser_parse_uop},
-    {TT_LPARENT, OT_BOP, parser_parse_bop}
+    {TT_EQ,        OT_BOP, parser_parse_bop},
+    {TT_PLUS,      OT_BOP, parser_parse_bop},
+    {TT_MINUS,     OT_BOP, parser_parse_bop},
+    {TT_STAR,      OT_BOP, parser_parse_bop},
+    {TT_SLASH,     OT_BOP, parser_parse_bop},
+    {TT_PLUS,      OT_UOP, parser_parse_uop},
+    {TT_MINUS,     OT_UOP, parser_parse_uop},
+    {TT_AMPERSAND, OT_UOP, parser_parse_uop},
+    {TT_LPARENT,   OT_BOP, parser_parse_bop}
 };
 
 void parser_expr_parse(parser_info_t *parser, vector_token_t_t *expr)
