@@ -5,6 +5,8 @@
 #include "../../types/hashmap.h"
 #include "../codegen_common.h"
 
+genlist(string_t)
+
 typedef struct {
     list_error_t_pair_t                  *err_stk;
     args_t                                args;
@@ -14,6 +16,8 @@ typedef struct {
     size_t                                outcode_offset;
     list_codegen_namespace_info_t_pair_t *namespaces;
     ast_fun_info_t                       *cur_fun_info;
+    list_string_t_pair_t                 *data_str_lits;
+    size_t                                data_str_lit_count;
 } codegen_x8086_info_t;
 
 void codegen_x8086_var_decl(codegen_x8086_info_t *codegen);
@@ -35,6 +39,7 @@ codegen_x8086_info_t *codegen_x8086_create(list_error_t_pair_t *err_stk, args_t 
     global_namespace->locvar_offset = 0;
     list_codegen_namespace_info_t_add(codegen->namespaces, global_namespace);
     codegen->cur_fun_info = 0;
+    codegen->data_str_lits = list_string_t_create();
     return codegen;
 }
 
@@ -45,6 +50,7 @@ void codegen_x8086_delete(codegen_x8086_info_t *codegen)
     }
     list_codegen_namespace_info_t_free(codegen->namespaces);
     string_free(codegen->outcode);
+    list_string_t_free(codegen->data_str_lits);
 }
 
 hashmap_codegen_var_info_t_t *var_offsets;

@@ -11,16 +11,6 @@ void codegen_x8086(codegen_x8086_info_t *codegen)
 
     putoutcode("bits 16\n\nglobal %s\n\n", codegen->args.entry_fun_name);
 
-    putoutcode("section .data\n", 0);
-    codegen->outcode_offset++;
-    foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
-        codegen->cur_node = cur->val;
-        if (cur->val->type == NT_VARIABLE_DECL) {
-            codegen_x8086_static_var_decl(codegen);
-        }
-    }
-    codegen->outcode_offset--;
-
     putoutcode("\nsection .text\n", 0);
     codegen->outcode_offset++;
 
@@ -28,6 +18,20 @@ void codegen_x8086(codegen_x8086_info_t *codegen)
         codegen->cur_node = cur->val;
         if (cur->val->type == NT_FUNCTION_DECL) {
             codegen_x8086_fun_decl(codegen);
+        }
+    }
+    codegen->outcode_offset--;
+
+    putoutcode("section .data\n", 0);
+    codegen->outcode_offset++;
+    size_t lit_num = 0;
+    foreach (list_string_t_pair_t, codegen->data_str_lits) {
+        putoutcode("strlit%u db \"%s\", 0\n", lit_num++, cur->val->str);
+    }
+    foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
+        codegen->cur_node = cur->val;
+        if (cur->val->type == NT_VARIABLE_DECL) {
+            codegen_x8086_static_var_decl(codegen);
         }
     }
     codegen->outcode_offset--;

@@ -107,6 +107,14 @@ void lex_text(lexer_info_t *lexer)
         if (lexer->text[lexer->pos] == '&') {
             push_tok(TT_AMPERSAND, "&");
         } else
+        if (lexer->text[lexer->pos] == '"') {
+            size_t i = 0;
+            while (lexer->text[++lexer->pos] != '"') {
+                lexer->buf[i++] = lexer->text[lexer->pos];
+            }
+            lexer->buf[i] == '\0';
+            push_tok(TT_STR_LIT, lexer->buf);
+        } else
         if (isalpha(lexer->text[lexer->pos]) || lexer->text[lexer->pos] == '_') {
             lexer_alpha_parse(lexer);
             lexer->pos--;
