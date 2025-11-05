@@ -10,7 +10,7 @@
 
 #include "args.h"
 #include "preproc.h"
-#include "lexer.h"
+#include "tokenizer.h"
 #include "parser.h"
 #include "codegen/x8664_win.h"
 #include "codegen/x8086.h"
@@ -87,17 +87,17 @@ int main(int argc, char **argv)
         }
     /* ------------------ */
 
-    /* --- lexical analis / tokenization --- */
+    /* --- lex analis / tokenization --- */
         vector_token_t_t *toks = vector_token_t_create();
-        lexer_info_t *lexer = lexer_create(args, code->str, toks, args.infile_name);
-        lex_text(lexer);
+        tokenizer_info_t *tokenizer = tokenizer_create(args, code->str, toks, args.infile_name);
+        lex_text(tokenizer);
         if (args.flags & ARGS_FLG_TOKS_PUT) {
             for (size_t i = 0; i < toks->size; i++) {
                 printf_s("%u. %u:%u %u %s\n", i, toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
             }
         }
 
-        lexer_delete(lexer);
+        tokenizer_delete(tokenizer);
     /* ------------------------------------- */
 
     /* --- parsing --- */
