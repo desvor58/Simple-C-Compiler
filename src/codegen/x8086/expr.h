@@ -28,10 +28,10 @@ void codegen_x8086_get_val(codegen_x8086_info_t *codegen, ast_node_t *node, size
         string_cat(str, "%s", node->info);
         string_push_back(str, '\0');
         list_string_t_add(codegen->data_str_lits, str);
-        putoutcode("mov %s [bp - %u], %s\n",
+        putoutcode("mov %s [bp - %u], strlit%u\n",
                    codegen_x8086_get_asm_type(expected_type),
                    dst_offset,
-                   format("strlit%u", codegen->data_str_lit_count++));
+                   codegen->data_str_lit_count++);
     } else
     if (node->type == NT_IDENT) {
         codegen_var_info_t *var_info = hashmap_codegen_var_info_t_get(var_offsets, node->info);

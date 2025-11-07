@@ -112,7 +112,7 @@ void tokenize_text(tokenizer_info_t *tokenizer)
             while (tokenizer->text[++tokenizer->pos] != '"') {
                 tokenizer->buf[i++] = tokenizer->text[tokenizer->pos];
             }
-            tokenizer->buf[i] == '\0';
+            tokenizer->buf[i] = '\0';
             push_tok(TT_STR_LIT, tokenizer->buf);
         } else
         if (isalpha(tokenizer->text[tokenizer->pos]) || tokenizer->text[tokenizer->pos] == '_') {
