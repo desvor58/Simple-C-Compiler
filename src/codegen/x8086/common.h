@@ -32,7 +32,7 @@ codegen_x8086_info_t *codegen_x8086_create(list_error_t_pair_t *err_stk, args_t 
     codegen->args = args;
     codegen->ast_root = ast;
     codegen->cur_node = ast;
-    codegen->outcode = string_create();
+    codegen->outcode = string_create("");
     codegen->outcode_offset = 0;
     codegen->namespaces = list_codegen_namespace_info_t_create();
     codegen_namespace_info_t *global_namespace = malloc(sizeof(codegen_namespace_info_t));

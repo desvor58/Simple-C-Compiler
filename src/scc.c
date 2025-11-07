@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 {
     err_stk = list_error_t_create();
 
-    code = string_create();
+    code = string_create("");
 
     error_t err = args_parse(&args, argc, argv);
     if (strlen(err.msg)) {

@@ -10,13 +10,16 @@ typedef struct
     size_t aloc_size;
 } string_t;
 
-string_t *string_create()
+void string_cat(string_t *str, char *fmt, ...);
+
+string_t *string_create(char *init_val)
 {
     string_t *str = malloc(sizeof(string_t));
-    str->str = malloc(sizeof(char) * 512);
+    str->str = malloc(sizeof(char) * ((strlen(init_val) + 1) / 512 + 1)*512);
     str->str[0] = '\0';
     str->size = 0;
-    str->aloc_size = 512;
+    str->aloc_size = sizeof(char) * ((strlen(init_val) + 1) / 512 + 1)*512;
+    string_cat(str, "%s", init_val);
     return str;
 }
 
@@ -28,23 +31,6 @@ void __string_realoc(string_t *str)
     }
     free(str->str);
     str->str = new_str;
-}
-
-string_t *ztos(int z)
-{
-    string_t *str = malloc(sizeof(string_t));
-    str->str = malloc(sizeof(char) * 512);
-    str->size = 0;
-    str->aloc_size = 512;
-
-    size_t alcnum = (z / 512) + 1;
-
-    for (size_t j = 0; j < alcnum; j++) {
-        __string_realoc(str);
-    }
-    itoa(z, str->str, 10);
-
-    return str;
 }
 
 void string_push_back(string_t *str, char val)
@@ -63,9 +49,21 @@ void string_cat(string_t *str, char *fmt, ...)
     vsnprintf(buf, 4*1024, fmt, args);
     va_end(args);
 
-    for (size_t i = 0; i < strlen(buf); i++) {
-        string_push_back(str, buf[i]);
+    char *new_str = malloc(sizeof(char) * (str->aloc_size + ((strlen(buf) + 1) / 512 + 1)*512));
+    size_t i = 0;
+    while (i < str->size) {
+        new_str[i] = str->str[i]; 
+        i++;
     }
+    size_t j = 0;
+    while (j < strlen(buf)) {
+        new_str[i] = buf[j];
+        str->size++;
+        i++;
+        j++;
+    }
+    free(str->str);
+    str->str = new_str;
     free(buf);
 }
 

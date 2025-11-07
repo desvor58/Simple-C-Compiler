@@ -128,7 +128,7 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
             preproc->buf[i++] = preproc->text[preproc->pos];
         }
         preproc->buf[i] = '\0';
-        string_t *full_path = string_create();
+        string_t *full_path = string_create("");
 
         int top = strlen(preproc->file) - 1;
         while (preproc->file[top] != '/' && preproc->file[top] != '\\' && top >= 0) {
@@ -154,7 +154,7 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
                    preproc->chpos);
             return;
         }
-        string_t *included_code = string_create();
+        string_t *included_code = string_create("");
         get_file_text(included_file, included_code);
         fclose(included_file);
 

@@ -41,7 +41,7 @@ void codegen_x8664_win_var_decl(codegen_x8664_win_info_t *codegen)
                                      codegen->namespaces->val->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));
         return;
     }
-    string_t *dst_str = string_create();
+    string_t *dst_str = string_create("");
     string_cat(dst_str, "%s [rbp - %u]",
                         codegen_x8664_win_get_asm_type(var_info->type.type),
                         codegen->namespaces->val->locvar_offset += codegen_x8664_win_get_type_size(var_info->type.type));

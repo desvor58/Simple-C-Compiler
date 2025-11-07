@@ -24,7 +24,7 @@ void codegen_x8086_get_val(codegen_x8086_info_t *codegen, ast_node_t *node, size
                    node->info);
     } else
     if (node->type == NT_STR_LIT) {
-        string_t *str = string_create();
+        string_t *str = string_create("");
         string_cat(str, "%s", node->info);
         string_push_back(str, '\0');
         list_string_t_add(codegen->data_str_lits, str);
