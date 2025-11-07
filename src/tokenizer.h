@@ -40,7 +40,7 @@ void tokenizer_buf_analis(tokenizer_info_t *tokenizer);
 
 #define push_tok(type, val) vector_token_t_push_back(tokenizer->toks, gen_token(type, val, tokenizer->line, tokenizer->chpos))
 
-void lex_text(tokenizer_info_t *tokenizer)
+void tokenize_text(tokenizer_info_t *tokenizer)
 {
     for (tokenizer->pos = 0; tokenizer->pos < strlen(tokenizer->text); tokenizer->pos++) {
         if (tokenizer->text[tokenizer->pos] == '\n') {

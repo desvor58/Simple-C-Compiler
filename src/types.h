@@ -53,7 +53,7 @@ genlist(error_t);
 #define generr(err_stk, msg, file, line, chpos)  \
     error_t *err = malloc(sizeof(error_t));  \
     *err = gen_error(msg, file, line, chpos);  \
-    list_error_t_add(err_stk, err);
+    list_error_t_add(err_stk, err)
 
 error_t gen_error(const char *msg, char *file, size_t line, size_t chpos)
 {
@@ -311,22 +311,6 @@ void put_pos_str(char *str, size_t pos)
         putchar(str[i]);
     }
     putchar('\n');
-}
-
-void get_folder_path(char *path, char *buf)
-{
-    long long top = strlen(path);
-    while (path[top] != '/' && top >= 0) {
-        top--;
-    }
-    buf[0] = '.';
-    buf[1] = '/';
-    size_t i = 2;
-    while (i - 2 <= top) {
-        buf[i] = path[i - 2];
-        i++;
-    }
-    buf[i] = '\0';
 }
 
 void get_file_text(FILE *file, string_t *buf)

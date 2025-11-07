@@ -122,18 +122,30 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         preproc->pos++;
     }
     if (preproc->text[preproc->pos] == '"') {
-        int i;
         preproc->buf[0] = '\0';
-        for (i = 0; preproc->text[++preproc->pos] != '"'; i++) {
-            preproc->buf[i] = preproc->text[preproc->pos];
+        size_t i = 0;
+        while (preproc->text[++preproc->pos] != '"') {
+            preproc->buf[i++] = preproc->text[preproc->pos];
         }
         preproc->buf[i] = '\0';
-        char *full_path = malloc(256);
-        get_folder_path(preproc->file, full_path);
-        strcat_s(full_path, 256, preproc->buf);
+        string_t *full_path = string_create();
+
+        int top = strlen(preproc->file) - 1;
+        while (preproc->file[top] != '/' && preproc->file[top] != '\\' && top >= 0) {
+            top--;
+        }
+        string_push_back(full_path, '.');
+        string_push_back(full_path, '/');
+        i = 2;
+        while (i - 2 <= top) {
+            string_push_back(full_path, preproc->file[i - 2]);
+            i++;
+        }
+
+        string_cat(full_path, "%s", preproc->buf);
         FILE *included_file;
-        fopen_s(&included_file, full_path, "r");
-        free(full_path);
+        fopen_s(&included_file, full_path->str, "r");
+        string_free(full_path);
         if (!included_file) {
             generr(preproc->err_stk,
                    "No such included file",

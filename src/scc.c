@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     /* --- lex analis / tokenization --- */
         vector_token_t_t *toks = vector_token_t_create();
         tokenizer_info_t *tokenizer = tokenizer_create(args, code->str, toks, args.infile_name);
-        lex_text(tokenizer);
+        tokenize_text(tokenizer);
         if (args.flags & ARGS_FLG_TOKS_PUT) {
             for (size_t i = 0; i < toks->size; i++) {
                 printf_s("%u. %u:%u %u %s\n", i, toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
