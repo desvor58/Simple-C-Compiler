@@ -9,7 +9,7 @@ typedef struct {
     vector_token_t_t *toks;
     char    *buf;
     size_t   pos;
-    char    *file;
+    char     file[MAX_IDENT_SIZE];
     size_t   line;
     size_t   chpos;
 } tokenizer_info_t;
@@ -22,7 +22,7 @@ tokenizer_info_t *tokenizer_create(args_t args, char *text, vector_token_t_t *to
     tokenizer->toks         = toks;
     tokenizer->buf          = (char*)malloc(sizeof(char) * MAX_IDENT_SIZE);
     tokenizer->pos          = 0;
-    tokenizer->file         = file;
+    strcpy(tokenizer->file, file);
     tokenizer->line         = 1;
     tokenizer->chpos        = 0;
     return tokenizer;
@@ -35,10 +35,11 @@ void tokenizer_delete(tokenizer_info_t *tokenizer)
 }
 
 void tokenizer_alpha_parse(tokenizer_info_t *tokenizer);
+void tokenizer_derective_parse(tokenizer_info_t *tokenizer);
 void tokenizer_digit_parse(tokenizer_info_t *tokenizer, size_t offset);
 void tokenizer_buf_analis(tokenizer_info_t *tokenizer);
 
-#define push_tok(type, val) vector_token_t_push_back(tokenizer->toks, gen_token(type, val, tokenizer->line, tokenizer->chpos))
+#define push_tok(type, val) vector_token_t_push_back(tokenizer->toks, gen_token(type, val, tokenizer->line, tokenizer->chpos, tokenizer->file))
 
 void tokenize_text(tokenizer_info_t *tokenizer)
 {
@@ -49,6 +50,9 @@ void tokenize_text(tokenizer_info_t *tokenizer)
         } else {
             tokenizer->chpos++;
         }
+        if (tokenizer->text[tokenizer->pos] == '#') {
+            tokenizer_derective_parse(tokenizer);
+        } else
         if (tokenizer->text[tokenizer->pos] == '(') {
             push_tok(TT_LPARENT, "(");
         } else
@@ -123,6 +127,25 @@ void tokenize_text(tokenizer_info_t *tokenizer)
             tokenizer_digit_parse(tokenizer, 0);
             tokenizer->pos--;
         }
+    }
+}
+
+void tokenizer_derective_parse(tokenizer_info_t *tokenizer)
+{
+    size_t i = 0;
+    while (isalpha(tokenizer->text[++tokenizer->pos])) {
+        tokenizer->buf[i++] = tokenizer->text[tokenizer->pos];
+    }
+    tokenizer->buf[i] = '\0';
+
+    if (!strcmp(tokenizer->buf, "file")) {
+        while (tokenizer->text[++tokenizer->pos] == ' ') {}
+        i = 0;
+        while (tokenizer->text[++tokenizer->pos] != '\n') {
+            tokenizer->buf[i++] = tokenizer->text[tokenizer->pos];
+        }
+        tokenizer->buf[i] = '\0';
+        strcpy(tokenizer->file, tokenizer->buf);
     }
 }
 

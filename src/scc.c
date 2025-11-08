@@ -94,7 +94,13 @@ int main(int argc, char **argv)
         tokenize_text(tokenizer);
         if (args.flags & ARGS_FLG_TOKS_PUT) {
             for (size_t i = 0; i < toks->size; i++) {
-                printf_s("%u. %u:%u %u %s\n", i, toks->arr[i].line_ref, toks->arr[i].chpos_ref, toks->arr[i].type, toks->arr[i].val);
+                printf_s("%u. %s:%u:%u %u %s\n",
+                         i,
+                         toks->arr[i].file_ref,
+                         toks->arr[i].line_ref,
+                         toks->arr[i].chpos_ref,
+                         toks->arr[i].type,
+                         toks->arr[i].val);
             }
         }
 

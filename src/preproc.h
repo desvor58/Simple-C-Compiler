@@ -56,6 +56,12 @@ void preprocess(preproc_info_t *preproc)
         macros_be_created = 1;
     }
 
+    string_insert(preproc->text, 0, "#file %s\n", preproc->file);
+    while (preproc->text->str[preproc->pos] != '\n' && preproc->text->str[preproc->pos] != '\0')  {
+        preproc->pos++;
+    }
+    preproc->pos++;
+
     for (preproc->pos = 0; preproc->pos < preproc->text->size; preproc->pos++) {
         if (preproc->text->str[preproc->pos] == '\n') {
             preproc->line++;
@@ -75,6 +81,7 @@ void preprocess(preproc_info_t *preproc)
             u32 start_pos = preproc->pos;
             preproc_gettok(preproc);
 
+            if (!strcmp(preproc->buf->str, "#file")) {} else
             if (!strcmp(preproc->buf->str, "#include")) {
                 preproc_derective_include(preproc, start_pos);
             } else
@@ -89,6 +96,7 @@ void preprocess(preproc_info_t *preproc)
                        preproc->file,
                        preproc->line,
                        preproc->chpos);
+                       printf_s("%s\n", preproc->buf->str);
             }
             preproc->pos--;
         } else
@@ -138,7 +146,6 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         string_cat(full_path, "%s", preproc->buf->str);
         FILE *included_file;
         fopen_s(&included_file, full_path->str, "r");
-        string_free(full_path);
         if (!included_file) {
             generr(preproc->err_stk,
                    "No such included file",
@@ -151,7 +158,10 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         get_file_text(included_file, included_code);
         fclose(included_file);
 
-        preproc_info_t *_preproc = preproc_create(preproc->err_stk, preproc->args, included_code, preproc->file);
+        preproc_info_t *_preproc = preproc_create(preproc->err_stk,
+                                                  preproc->args,
+                                                  included_code,
+                                                  full_path->str);
         
         preprocess(_preproc);
         preproc_delete(_preproc);
@@ -161,7 +171,13 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
 
         preproc->pos = start_pos + included_code->size;
 
+        string_insert(preproc->text, preproc->pos, "#file %s\n", preproc->file);
+        while (preproc->text->str[preproc->pos] != '\n' && preproc->text->str[preproc->pos] != '\0')  {
+            preproc->pos++;
+        }
+
         string_free(included_code);
+        string_free(full_path);
     }
 }
 

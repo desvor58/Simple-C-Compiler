@@ -130,19 +130,21 @@ typedef enum {
 typedef struct {
     token_type type;
     char       val[MAX_IDENT_SIZE];
+    char       file_ref[MAX_IDENT_SIZE];
     size_t     line_ref;
     size_t     chpos_ref;
 } token_t;
 
 genvector(token_t, 128)
 
-token_t gen_token(token_type type, char *val, size_t line_ref, size_t chpos_ref)
+token_t gen_token(token_type type, char *val, size_t line_ref, size_t chpos_ref, char *file_ref)
 {
     token_t tok;
     tok.type = type;
     strcpy(tok.val, val);
     tok.line_ref = line_ref;
     tok.chpos_ref = chpos_ref;
+    strcpy(tok.file_ref, file_ref);
     return tok;
 }
 
