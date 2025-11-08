@@ -19,7 +19,6 @@ string_t *string_create(char *init_val)
     str->str[0] = '\0';
     str->size = 0;
     str->aloc_size = sizeof(char) * ((strlen(init_val) + 1) / 512 + 1)*512;
-    string_cat(str, "%s", init_val);
     return str;
 }
 
@@ -61,6 +60,74 @@ void string_cat(string_t *str, char *fmt, ...)
         str->size++;
         i++;
         j++;
+    }
+    free(str->str);
+    str->str = new_str;
+    free(buf);
+}
+
+void string_insert(string_t *str, size_t index, char *fmt, ...)
+{
+    char *buf = malloc(4*1024);
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, 4*1024, fmt, args);
+    va_end(args);
+
+    char *new_str = malloc(sizeof(char) * (str->aloc_size + ((strlen(buf) + 1) / 512 + 1)*512));
+    size_t i = 0;
+    while (i < index) {
+        new_str[i] = str->str[i]; 
+        i++;
+    }
+    size_t j = 0;
+    while (j < strlen(buf)) {
+        new_str[i] = buf[j];
+        str->size++;
+        i++;
+        j++;
+    }
+    size_t k = index;
+    while (k < str->size) {
+        new_str[i] = str->str[k];
+        i++;
+        k++;
+    }
+    free(str->str);
+    str->str = new_str;
+    free(buf);
+}
+
+void string_replace(string_t *str, size_t start, size_t end, char *fmt, ...)
+{
+    char *buf = malloc(4*1024);
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, 4*1024, fmt, args);
+    va_end(args);
+    size_t size_acc = str->size;
+
+    char *new_str = malloc(sizeof(char) * (str->aloc_size + ((strlen(buf) + 1) / 512 + 1)*512));
+    str->size = 0;
+    size_t i = 0;
+    while (i < start) {
+        new_str[i] = str->str[i]; 
+        str->size++;
+        i++;
+    }
+    size_t j = 0;
+    while (j < strlen(buf)) {
+        new_str[i] = buf[j];
+        str->size++;
+        i++;
+        j++;
+    }
+    size_t k = end;
+    while (k < size_acc) {
+        new_str[i] = str->str[k];
+        str->size++;
+        i++;
+        k++;
     }
     free(str->str);
     str->str = new_str;

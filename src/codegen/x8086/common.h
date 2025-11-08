@@ -40,6 +40,7 @@ codegen_x8086_info_t *codegen_x8086_create(list_error_t_pair_t *err_stk, args_t 
     list_codegen_namespace_info_t_add(codegen->namespaces, global_namespace);
     codegen->cur_fun_info = 0;
     codegen->data_str_lits = list_string_t_create();
+    codegen->data_str_lit_count = 0;
     return codegen;
 }
 

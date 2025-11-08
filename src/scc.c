@@ -76,10 +76,11 @@ int main(int argc, char **argv)
         put_error(gen_error("input file not be opened", "", 0, 0), 1);
     }
     get_file_text(infile, code);
+    //printf_s("%s\nEND\n", code->str);
     fclose(infile);
 
     /* --- preprocess --- */
-        preproc_info_t *preproc = preproc_create(err_stk, args, code->str, args.infile_name);
+        preproc_info_t *preproc = preproc_create(err_stk, args, code, args.infile_name);
         preprocess(preproc);
         preproc_delete(preproc);
         if (args.flags & ARGS_FLG_PREPROC_STOP) {
