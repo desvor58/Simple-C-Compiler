@@ -9,10 +9,22 @@ void codegen_x8086(codegen_x8086_info_t *codegen)
 {
     var_offsets = hashmap_codegen_var_info_t_create();
 
-    putoutcode("bits 16\n\nglobal %s\n\n", codegen->args.entry_fun_name);
+    putoutcode("[BITS 16]\n[ORG 8000h]\n\nglobal %s\n\n", codegen->args.entry_fun_name);
 
-    putoutcode("\nsection .text\n", 0);
+    //putoutcode("\nsection .text\n", 0);
     codegen->outcode_offset++;
+
+    size_t i = 0;
+    foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
+        codegen->cur_node = cur->val;
+        if (cur->val->type == NT_FUNCTION_DECL
+         && !strcmp(((ast_fun_info_t*)cur->val->info)->name, codegen->args.entry_fun_name)
+        ) {
+            codegen_x8086_fun_decl(codegen);
+            list_ast_node_t_delete(codegen->ast_root->childs, i);
+        }
+        i++;
+    }
 
     foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
         codegen->cur_node = cur->val;
@@ -22,7 +34,7 @@ void codegen_x8086(codegen_x8086_info_t *codegen)
     }
     codegen->outcode_offset--;
 
-    putoutcode("section .data\n", 0);
+    //putoutcode("section .data\n", 0);
     codegen->outcode_offset++;
     size_t lit_num = 0;
     foreach (list_string_t_pair_t, codegen->data_str_lits) {

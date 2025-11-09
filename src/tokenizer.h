@@ -89,10 +89,15 @@ void tokenize_text(tokenizer_info_t *tokenizer)
             ) {
                 tokenizer->buf[0] = '-';
                 tokenizer->pos++;
-                while (tokenizer->text[tokenizer->pos] == ' ') {tokenizer->pos++;}
+                tokenizer->chpos++;
+                while (tokenizer->text[tokenizer->pos] == ' ') {
+                    tokenizer->pos++;
+                    tokenizer->chpos++;
+                }
                 if (isdigit(tokenizer->text[tokenizer->pos])) {
                     tokenizer_digit_parse(tokenizer, 1);
                     tokenizer->pos--;
+                    tokenizer->chpos--;
                     continue;
                 }
                 tokenizer->pos--;
@@ -115,6 +120,7 @@ void tokenize_text(tokenizer_info_t *tokenizer)
             size_t i = 0;
             while (tokenizer->text[++tokenizer->pos] != '"') {
                 tokenizer->buf[i++] = tokenizer->text[tokenizer->pos];
+                tokenizer->chpos++;
             }
             tokenizer->buf[i] = '\0';
             push_tok(TT_STR_LIT, tokenizer->buf);
@@ -122,10 +128,12 @@ void tokenize_text(tokenizer_info_t *tokenizer)
         if (isalpha(tokenizer->text[tokenizer->pos]) || tokenizer->text[tokenizer->pos] == '_') {
             tokenizer_alpha_parse(tokenizer);
             tokenizer->pos--;
+            tokenizer->chpos--;
         } else
         if (isdigit(tokenizer->text[tokenizer->pos])) {
             tokenizer_digit_parse(tokenizer, 0);
             tokenizer->pos--;
+            tokenizer->chpos--;
         }
     }
 }
@@ -135,14 +143,18 @@ void tokenizer_derective_parse(tokenizer_info_t *tokenizer)
     size_t i = 0;
     while (isalpha(tokenizer->text[++tokenizer->pos])) {
         tokenizer->buf[i++] = tokenizer->text[tokenizer->pos];
+        tokenizer->chpos++;
     }
     tokenizer->buf[i] = '\0';
 
     if (!strcmp(tokenizer->buf, "file")) {
-        while (tokenizer->text[++tokenizer->pos] == ' ') {}
+        while (tokenizer->text[++tokenizer->pos] == ' ') {
+            tokenizer->chpos++;
+        }
         i = 0;
         while (tokenizer->text[++tokenizer->pos] != '\n') {
             tokenizer->buf[i++] = tokenizer->text[tokenizer->pos];
+            tokenizer->chpos++;
         }
         tokenizer->buf[i] = '\0';
         strcpy(tokenizer->file, tokenizer->buf);
@@ -157,6 +169,7 @@ void tokenizer_alpha_parse(tokenizer_info_t *tokenizer)
         || tokenizer->text[tokenizer->pos] == '_'
     ) {
         tokenizer->buf[i++] = tokenizer->text[tokenizer->pos++];
+        tokenizer->chpos++;
     }
     tokenizer->buf[i] = '\0';
     tokenizer_buf_analis(tokenizer);
@@ -175,6 +188,9 @@ void tokenizer_buf_analis(tokenizer_info_t *tokenizer)
     } else
     if (!strcmp(tokenizer->buf, "return")) {
         push_tok(TT_KW_RETURN, "return");
+    } else
+    if (!strcmp(tokenizer->buf, "asm")) {
+        push_tok(TT_KW_ASM, "asm");
     } else {
         push_tok(TT_IDENT, tokenizer->buf);
     }
@@ -185,6 +201,7 @@ void tokenizer_digit_parse(tokenizer_info_t *tokenizer, size_t offset)
     size_t i = offset;
     while (isdigit(tokenizer->text[tokenizer->pos])) {
         tokenizer->buf[i++] = tokenizer->text[tokenizer->pos++];
+        tokenizer->chpos++;
     }
     tokenizer->buf[i] = '\0';
     push_tok(TT_INT_LIT, tokenizer->buf);

@@ -144,6 +144,7 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         }
 
         string_cat(full_path, "%s", preproc->buf->str);
+        //printf_s("full_path:%s, buf:%s\n", full_path->str, preproc->buf->str);
         FILE *included_file;
         fopen_s(&included_file, full_path->str, "r");
         if (!included_file) {

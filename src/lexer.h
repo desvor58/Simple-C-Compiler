@@ -31,47 +31,66 @@ void lex_text(lexer_info_t *lexer)
 {
     for (; lexer->pos < lexer->toks->size; lexer->pos++) {
         if (lexer->toks->arr[lexer->pos].type == TT_TYPE_NAME) {
-
+            lexer_decl_analis(lexer);
         }
     }
 }
 
 void lexer_decl_analis(lexer_info_t *lexer)
 {
-    size_t offset = 0;
-    while (lexer->pos < lexer->toks
-        && (lexer->toks->arr[lexer->pos + offset].type == TT_TYPE_NAME
-         || lexer->toks->arr[lexer->pos + offset].type == TT_STAR)) {
-        offset++;
+    while (lexer->pos < lexer->toks->size
+        && (lexer->toks->arr[lexer->pos].type == TT_TYPE_NAME
+         || lexer->toks->arr[lexer->pos].type == TT_STAR)) {
+        lexer->pos++;
     }
 
-    if (lexer->pos + offset >= lexer->toks->size
-     || lexer->toks->arr[lexer->pos + offset].type != TT_IDENT) {
+    if (lexer->pos >= lexer->toks->size) {
         generr(lexer->err_stk,
                "Expected identifire",
                lexer->args.infile_name,
-               lexer->toks->arr[lexer->pos + offset].line_ref,
-               lexer->toks->arr[lexer->pos + offset].chpos_ref);
+               lexer->toks->arr[lexer->pos - 1].line_ref,
+               lexer->toks->arr[lexer->pos - 1].chpos_ref);
+    } else
+    if (lexer->toks->arr[lexer->pos].type != TT_IDENT) {
+        generr(lexer->err_stk,
+               "Expected identifire",
+               lexer->args.infile_name,
+               lexer->toks->arr[lexer->pos].line_ref,
+               lexer->toks->arr[lexer->pos].chpos_ref);
     }
 
-    offset++;
-    while (lexer->pos < lexer->toks) {
-        if (lexer->toks->arr[lexer->pos + offset].type == TT_EQ
-         || lexer->toks->arr[lexer->pos + offset].type == TT_SEMICOLON
-         || lexer->toks->arr[lexer->pos + offset].type == TT_) {
+    for (;;lexer->pos++) {
+        if (lexer->pos >= lexer->toks->size) {
+            generr(lexer->err_stk,
+                   "Expected `=`, `;` or `(` token",
+                   lexer->toks->arr[lexer->pos - 1].file_ref,
+                   lexer->toks->arr[lexer->pos - 1].line_ref,
+                   lexer->toks->arr[lexer->pos - 1].chpos_ref);
             break;
         }
-        if (lexer->toks->arr[lexer->pos + offset].type == TT_LSQUARE_BRACKET) {
-            if (lexer->toks->arr[lexer->pos + offset + 1].type == )
+        if (lexer->toks->arr[lexer->pos].type == TT_SEMICOLON) {
+            return;
+        }
+        if (lexer->toks->arr[lexer->pos].type == TT_EQ
+         || lexer->toks->arr[lexer->pos].type == TT_LPARENT) {
+            break;
+        }
+        if (lexer->toks->arr[lexer->pos].type == TT_LSQUARE_BRACKET) {
+            if (lexer->toks->arr[++lexer->pos].type != TT_RSQUARE_BRACKET) {
+                generr(lexer->err_stk,
+                       "Expected `]` token after `[`",
+                       lexer->toks->arr[lexer->pos - 1].file_ref,
+                       lexer->toks->arr[lexer->pos - 1].line_ref,
+                       lexer->toks->arr[lexer->pos - 1].chpos_ref);
+            }
         }
     }
-    if (lexer->toks->arr[lexer->pos + 2].type 
-     || lexer->pos + 1 >= lexer->toks->size) {
+    if (lexer->toks->arr[++lexer->pos].type == TT_SEMICOLON) {
         generr(lexer->err_stk,
-               "Expected identifire",
-               lexer->args.infile_name,
-               lexer->toks->arr[lexer->pos + 1].line_ref,
-               lexer->toks->arr[lexer->pos + 1].chpos_ref);
+               "Expected expression before `;` token",
+               lexer->toks->arr[lexer->pos - 1].file_ref,
+               lexer->toks->arr[lexer->pos - 1].line_ref,
+               lexer->toks->arr[lexer->pos - 1].chpos_ref);
     }
 }
 

@@ -124,7 +124,8 @@ typedef enum {
     TT_STR_LIT,
     TT_COMA,
     TT_SEMICOLON,
-    TT_KW_RETURN
+    TT_KW_RETURN,
+    TT_KW_ASM
 } token_type;
 
 typedef struct {
@@ -162,6 +163,7 @@ typedef enum {
     NT_IDENT,
     NT_FUNCTION_CALL,
     NT_STMT_RETURN,
+    NT_STMT_ASM,
 } ast_node_type;
 
 typedef struct {
@@ -329,6 +331,8 @@ void get_file_text(FILE *file, string_t *buf)
                     c = getc(file);
                 }
                 buf->str[buf->size - 1] = '\n';
+            } else {
+                string_push_back(buf, c);
             }
         }
     }

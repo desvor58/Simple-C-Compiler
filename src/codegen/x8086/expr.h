@@ -38,7 +38,7 @@ void codegen_x8086_get_val(codegen_x8086_info_t *codegen, ast_node_t *node, size
         if (!var_info) {
             puts("error in x8086:expr:get_val:if ident");
             exit(1);
-        }
+        } 
         if (var_info->isstatic) {
             putoutcode("mov %s [bp - %u], [rel %s]\n",
                        codegen_x8086_get_asm_type(expected_type),
@@ -88,9 +88,9 @@ void codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, siz
     } else
     if (root->type == NT_FUNCTION_CALL) {
         ast_fun_info_t *fun_info = root->info;
-        putoutcode("sub sp, %u\n", codegen->namespaces->val->locvar_offset - 2);
+        putoutcode("sub sp, %u\n", codegen->namespaces->val->locvar_offset - 4);
         if (list_ast_node_t_size(root->childs) > 1) {
-            size_t offset = 4;
+            size_t offset = 8;
             size_t i = 0;
             foreach (list_ast_node_t_pair_t, root->childs->next) {
                 codegen_x8086_expr_gen(codegen, cur->val, offset, list_ast_var_info_t_get(fun_info->params, i)->type);
@@ -99,7 +99,7 @@ void codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, siz
             }
         }
         putoutcode("call %s\n", root->childs->val->info);
-        putoutcode("add sp, %u\n", codegen->namespaces->val->locvar_offset - 2);
+        putoutcode("add sp, %u\n", codegen->namespaces->val->locvar_offset - 4);
         putoutcode("mov %s [bp - %u], ax\n", codegen_x8086_get_asm_type(expected_type), dst_offset);
     } else
     if (root->type == NT_BOP) {

@@ -19,6 +19,9 @@ void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_st
         if (cur->val->type == NT_VARIABLE_DECL) {
             codegen_x8086_var_decl(codegen);
         } else
+        if (cur->val->type == NT_STMT_ASM) {
+            codegen_x8086_stmt_asm_gen(codegen);
+        } else
         if (cur->val->type == NT_STMT_RETURN) {
             codegen_x8086_stmt_return_gen(codegen);
         } else {
@@ -38,6 +41,8 @@ void codegen_x8086_var_decl(codegen_x8086_info_t *codegen)
     cginfo->isstatic = 0;
     cginfo->type = var_info->type;
     hashmap_codegen_var_info_t_set(var_offsets, var_info->name, cginfo);
+    if (list_ast_node_t_size(codegen->cur_node->childs) == 0) {
+    } else
     if (codegen->cur_node->childs->val->type == NT_EXPR) {
         codegen_x8086_expr_gen(codegen,
                                codegen->cur_node->childs->val->childs->val,
@@ -71,7 +76,7 @@ void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
     putoutcode("mov bp, sp\n", 0);
     codegen->outcode_offset++;
 
-    size_t offset = 2;
+    size_t offset = 4;
     foreach (list_ast_var_info_t_pair_t, fun_info->params) {
         codegen_var_info_t *var_info = malloc(sizeof(codegen_var_info_t));
         var_info->isstatic   = 0;

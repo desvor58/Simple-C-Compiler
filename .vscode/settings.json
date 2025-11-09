@@ -38,6 +38,11 @@
         "xlocbuf": "c",
         "xlocmon": "c",
         "xloctime": "c",
-        "xmemory": "c"
+        "xmemory": "c",
+        "tokenizer.h": "c",
+        "x8664_win.h": "c",
+        "stdio.h": "c",
+        "codegen_common.h": "c",
+        "dev_test.h": "c"
     }
 }

@@ -124,16 +124,29 @@ void parser_fun_decl_parse(parser_info_t *parser, size_t ident_offset, size_t se
             return;
         }
         vector_token_t_t *arg_slice = vector_token_t_create();
+        size_t arg_ident_cnt = 0;
         size_t arg_ident_offset = rparent_offset;
         while (parser->toks->arr[parser->pos + rparent_offset].type != TT_COMA
             && parser->toks->arr[parser->pos + rparent_offset].type != TT_RPARENT
         ) {
             if (parser->toks->arr[parser->pos + rparent_offset].type != TT_IDENT) {
-                arg_ident_offset = rparent_offset - arg_ident_offset + 1;
+                arg_ident_offset = arg_ident_cnt + 1;
             }
             vector_token_t_push_back(arg_slice, parser->toks->arr[parser->pos + rparent_offset]);
             rparent_offset++;
+            arg_ident_cnt++;
         }
+
+        // puts("arg_slice:");
+        // printf_s("%u\n", arg_ident_offset);
+        // for (size_t i = 0; i < arg_slice->size; i++) {
+        //     printf_s("    type:%u val:%s", arg_slice->arr[i].type, arg_slice->arr[i].val);
+        //     if (i == arg_ident_offset) {
+        //         printf_s("  <- arg_ident_offset");
+        //     }
+        //     putchar('\n');
+        // }
+
         ast_var_info_t *arg_info = malloc(sizeof(ast_var_info_t));
         arg_info->type = parser_type_parse(parser, arg_slice, arg_ident_offset);
         strcpy(arg_info->name, arg_slice->arr[arg_ident_offset].val);
@@ -228,6 +241,15 @@ void parser_namespace_parse(parser_info_t *parser, size_t start, size_t end)
                 parser->pos++;
             }
             parser_stmt_return_parse(parser, stmt);
+            vector_token_t_free(stmt);
+        } else 
+        if (parser->toks->arr[parser->pos].type == TT_KW_ASM) {
+            vector_token_t_t *stmt = vector_token_t_create();
+            while (parser->toks->arr[parser->pos].type != TT_SEMICOLON) {
+                vector_token_t_push_back(stmt, parser->toks->arr[parser->pos]);
+                parser->pos++;
+            }
+            parser_stmt_asm_parse(parser, stmt);
             vector_token_t_free(stmt);
         } else {
             vector_token_t_t *expr = vector_token_t_create();

@@ -11,6 +11,7 @@
 #include "args.h"
 #include "preproc.h"
 #include "tokenizer.h"
+#include "lexer.h"
 #include "parser.h"
 #include "codegen/x8664_win.h"
 #include "codegen/x8086.h"
@@ -44,11 +45,21 @@ void ast_print(ast_node_t *node, int tab)
     if (node->type == NT_FUNCTION_DECL)    str = "fun decl";
     if (node->type == NT_FUNCTION_CALL)    str = "fun call";
     if (node->type == NT_STMT_RETURN)      str = "stmt return";
+    if (node->type == NT_STMT_ASM)         str = "stmt asm";
 
     for (int i = 0; i < tab; i++) {
         putchar(' ');
     }
     printf_s("%s  %s  %u\n", str, (char*)node->info, node->info);
+    // if (node->type == NT_FUNCTION_DECL) {
+    //     puts("params:");
+    //     foreach (list_ast_var_info_t_pair_t,
+    //              ((ast_fun_info_t*)node->info)->params
+    //     ) {
+    //         printf_s("{name:%s type:%u typemodt:%u} ", cur->val->name, cur->val->type.type, cur->val->type.modifires_top);
+    //     }
+    //     puts("\n");
+    // }
     size_t i = 0;
     while (i < list_ast_node_t_size(node->childs)) {
         ast_print(list_ast_node_t_get(node->childs, i), tab + 2);
@@ -88,7 +99,7 @@ int main(int argc, char **argv)
         }
     /* ------------------ */
 
-    /* --- lex analis / tokenization --- */
+    /* --- tokenization --- */
         vector_token_t_t *toks = vector_token_t_create();
         tokenizer_info_t *tokenizer = tokenizer_create(args, code->str, toks, args.infile_name);
         tokenize_text(tokenizer);
@@ -105,7 +116,14 @@ int main(int argc, char **argv)
         }
 
         tokenizer_delete(tokenizer);
-    /* ------------------------------------- */
+    /* -------------------- */
+
+    /* --- lexical analis --- */
+        lexer_info_t *lexer = lexer_create(err_stk, args, toks);
+        lex_text(lexer);
+        check_errs();
+        lexer_delete(lexer);
+    /* ---------------------- */
 
     /* --- parsing --- */
         parser_info_t *parser = parser_create(err_stk, args, toks, args.infile_name);

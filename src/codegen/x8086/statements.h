@@ -21,4 +21,11 @@ void codegen_x8086_stmt_return_gen(codegen_x8086_info_t *codegen)
     putoutcode("ret\n", 0);
 }
 
+void codegen_x8086_stmt_asm_gen(codegen_x8086_info_t *codegen)
+{
+    foreach (list_ast_node_t_pair_t, codegen->cur_node->childs) {
+        putoutcode("%s\n", cur->val->info);
+    }
+}
+
 #endif
