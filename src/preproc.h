@@ -39,8 +39,9 @@ void preproc_skip_notoks(preproc_info_t *preproc);
 void preproc_gettok(preproc_info_t *preproc);
 
 void preproc_derective_include(preproc_info_t *preproc, size_t start_pos);
-void prerpoc_derective_define(preproc_info_t *preproc, size_t start_pos);
-void prerpoc_derective_undef(preproc_info_t *preproc, size_t start_pos);
+void preproc_derective_define(preproc_info_t *preproc, size_t start_pos);
+void preproc_derective_undef(preproc_info_t *preproc, size_t start_pos);
+void preproc_derective_ifndef(preproc_info_t *preproc, size_t start_pos);
 
 genhashmap(macro_info_t)
 
@@ -82,14 +83,20 @@ void preprocess(preproc_info_t *preproc)
             preproc_gettok(preproc);
 
             if (!strcmp(preproc->buf->str, "#file")) {} else
+            if (!strcmp(preproc->buf->str, "#endif")) {
+                string_replace(preproc->text, start_pos, preproc->pos, "");
+            } else
+            if (!strcmp(preproc->buf->str, "#ifndef")) {
+                preproc_derective_ifndef(preproc, start_pos);
+            } else
             if (!strcmp(preproc->buf->str, "#include")) {
                 preproc_derective_include(preproc, start_pos);
             } else
             if (!strcmp(preproc->buf->str, "#define")) {
-                prerpoc_derective_define(preproc, start_pos);
+                preproc_derective_define(preproc, start_pos);
             } else
             if (!strcmp(preproc->buf->str, "#undef")) {
-                prerpoc_derective_undef(preproc, start_pos);
+                preproc_derective_undef(preproc, start_pos);
             } else {
                 generr(preproc->err_stk,
                        "Unknow preprocessor derective",
@@ -144,7 +151,9 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         }
 
         string_cat(full_path, "%s", preproc->buf->str);
+        string_push_back(full_path, '\0');
         //printf_s("full_path:%s, buf:%s\n", full_path->str, preproc->buf->str);
+        
         FILE *included_file;
         fopen_s(&included_file, full_path->str, "r");
         if (!included_file) {
@@ -182,7 +191,7 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
     }
 }
 
-void prerpoc_derective_define(preproc_info_t *preproc, size_t start_pos)
+void preproc_derective_define(preproc_info_t *preproc, size_t start_pos)
 {
     preproc_skip_notoks(preproc);
     preproc_gettok(preproc);
@@ -205,7 +214,7 @@ void prerpoc_derective_define(preproc_info_t *preproc, size_t start_pos)
     preproc->pos = start_pos;
 }
 
-void prerpoc_derective_undef(preproc_info_t *preproc, size_t start_pos)
+void preproc_derective_undef(preproc_info_t *preproc, size_t start_pos)
 {
     preproc_skip_notoks(preproc);
     preproc_gettok(preproc);
@@ -244,6 +253,30 @@ void preproc_gettok(preproc_info_t *preproc)
         preproc->pos++;
     }
     string_push_back(preproc->buf, '\0');
+}
+
+void preproc_derective_ifndef(preproc_info_t *preproc, size_t start_pos)
+{
+    preproc_skip_notoks(preproc);
+    preproc_gettok(preproc);
+
+    macro_info_t *macro = hashmap_macro_info_t_get(macros, preproc->buf->str);
+    if (!macro) {
+        string_replace(preproc->text, start_pos, preproc->pos, "");
+        preproc->pos = start_pos;
+        return;
+    }
+    for (;;) {
+        if (preproc->text->str[preproc->pos++] != '#') {
+            preproc_gettok(preproc);
+            if (!strcmp(preproc->buf->str, "#endif")) {
+                while (preproc->text->str[preproc->pos++] != '\n') {}
+                string_replace(preproc->text, start_pos, preproc->pos, "");
+                preproc->pos = start_pos;
+                return;
+            }
+        }
+    }
 }
 
 #endif

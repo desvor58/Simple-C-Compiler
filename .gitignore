@@ -7,3 +7,4 @@ goyda
 a.s
 !tools/test.py
 test_tmp.txt
+!prclib
