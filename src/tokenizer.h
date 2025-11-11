@@ -75,7 +75,12 @@ void tokenize_text(tokenizer_info_t *tokenizer)
             push_tok(TT_SEMICOLON, ";");
         } else
         if (tokenizer->text[tokenizer->pos] == '=') {
-            push_tok(TT_EQ, "=");
+            if (tokenizer->text[tokenizer->pos + 1] == '=') {
+                push_tok(TT_DOUBLE_EQ, "==");
+                tokenizer->pos++;
+            } else {
+                push_tok(TT_EQ, "=");
+            }
         } else
         if (tokenizer->text[tokenizer->pos] == '+') {
             push_tok(TT_PLUS, "+");
@@ -188,6 +193,9 @@ void tokenizer_buf_analis(tokenizer_info_t *tokenizer)
     } else
     if (!strcmp(tokenizer->buf, "return")) {
         push_tok(TT_KW_RETURN, "return");
+    } else
+    if (!strcmp(tokenizer->buf, "if")) {
+        push_tok(TT_KW_IF, "if");
     } else
     if (!strcmp(tokenizer->buf, "asm")) {
         push_tok(TT_KW_ASM, "asm");

@@ -5,19 +5,27 @@
 #include "expr.h"
 #include "statements.h"
 
-void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_start)
+void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_start, ast_node_t *body_start, size_t offset)
 {
-    ast_node_t *body = codegen->cur_node;
     codegen_namespace_info_t *namespace = malloc(sizeof(codegen_namespace_info_t));
     namespace->locvar_offset = locvar_start;
     list_codegen_namespace_info_t_pair_t *new_namespace_list = list_codegen_namespace_info_t_create();
     new_namespace_list->val = namespace;
     new_namespace_list->next = codegen->namespaces;
     codegen->namespaces = new_namespace_list;
-    foreach (list_ast_node_t_pair_t, body->childs) {
+    list_ast_node_t_pair_t *body = body_start->childs;
+    size_t i = 0;
+    while (i < offset) {
+        body = body->next;
+        i++;
+    }
+    foreach (list_ast_node_t_pair_t, body) {
         codegen->cur_node = cur->val;
         if (cur->val->type == NT_VARIABLE_DECL) {
             codegen_x8086_var_decl(codegen);
+        } else
+        if (cur->val->type == NT_STMT_IF) {
+            codegen_x8086_stmt_if_gen(codegen);
         } else
         if (cur->val->type == NT_STMT_ASM) {
             codegen_x8086_stmt_asm_gen(codegen);
@@ -86,7 +94,7 @@ void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen)
         offset += codegen_x8086_get_type_size(var_info->type);
     }
 
-    codegen_x8086_namespace_gen(codegen, offset);
+    codegen_x8086_namespace_gen(codegen, offset, codegen->cur_node, 0);
 
     codegen->outcode_offset--;
     putoutcode("pop bp\n", 0);

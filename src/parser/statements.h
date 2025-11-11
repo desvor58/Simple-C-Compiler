@@ -36,4 +36,22 @@ void parser_stmt_asm_parse(parser_info_t *parser, vector_token_t_t *stmt)
     parser->cur_node = ast_acc;
 }
 
+void parser_stmt_if_parse(parser_info_t *parser, vector_token_t_t *expr, size_t ns_start, size_t ns_end)
+{
+    ast_node_t *ast_acc = parser->cur_node;
+    
+    parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_STMT_IF, (void*)0));
+    
+    ast_node_t *if_stmt_node = parser->cur_node;
+    if (expr->size > 1) {
+        parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_EXPR, (void*)0));
+    }
+    parser_expr_parse(parser, expr);
+    parser->cur_node = if_stmt_node;
+
+    parser_namespace_parse(parser, ns_start, ns_end);
+
+    parser->cur_node = ast_acc;
+}
+
 #endif

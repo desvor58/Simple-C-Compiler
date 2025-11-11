@@ -18,12 +18,13 @@ typedef struct {
     ast_fun_info_t                       *cur_fun_info;
     list_string_t_pair_t                 *data_str_lits;
     size_t                                data_str_lit_count;
+    size_t                                label_count;
 } codegen_x8086_info_t;
 
 void codegen_x8086_var_decl(codegen_x8086_info_t *codegen);
 void codegen_x8086_static_var_decl(codegen_x8086_info_t *codegen);
 void codegen_x8086_fun_decl(codegen_x8086_info_t *codegen);
-void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_start);
+void codegen_x8086_namespace_gen(codegen_x8086_info_t *codegen, size_t locvar_start, ast_node_t *body, size_t offset);
 
 codegen_x8086_info_t *codegen_x8086_create(list_error_t_pair_t *err_stk, args_t args, ast_node_t *ast)
 {
@@ -41,6 +42,7 @@ codegen_x8086_info_t *codegen_x8086_create(list_error_t_pair_t *err_stk, args_t 
     codegen->cur_fun_info = 0;
     codegen->data_str_lits = list_string_t_create();
     codegen->data_str_lit_count = 0;
+    codegen->label_count = 0;
     return codegen;
 }
 

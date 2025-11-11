@@ -135,6 +135,14 @@ void codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, siz
         putoutcode("mov %s, [bp - %u]\n",
                     reg,
                     dst_offset);
+        if (!strcmp(root->info, "==")) {
+            putoutcode("cmp %s, %s [bp - %u]\n",
+                       reg,
+                       codegen_x8086_get_asm_type(expected_type),
+                       dst_offset + codegen_x8086_get_type_size(expected_type));
+            putoutcode("setz %s\n",
+                       reg);
+        } else
         if (!strcmp(root->info, "*")) {
             putoutcode("imul %s, %s [bp - %u]\n",
                        reg,

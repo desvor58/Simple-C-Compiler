@@ -18,14 +18,15 @@ void codegen_x8086(codegen_x8086_info_t *codegen)
          && !strcmp(((ast_fun_info_t*)cur->val->info)->name, codegen->args.entry_fun_name)
         ) {
             codegen_x8086_fun_decl(codegen);
-            list_ast_node_t_delete(codegen->ast_root->childs, i);
         }
         i++;
     }
 
     foreach (list_ast_node_t_pair_t, codegen->ast_root->childs) {
         codegen->cur_node = cur->val;
-        if (cur->val->type == NT_FUNCTION_DECL) {
+        if (cur->val->type == NT_FUNCTION_DECL
+         && strcmp(((ast_fun_info_t*)cur->val->info)->name, codegen->args.entry_fun_name)
+        ) {
             codegen_x8086_fun_decl(codegen);
         }
     }

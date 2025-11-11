@@ -242,7 +242,44 @@ void parser_namespace_parse(parser_info_t *parser, size_t start, size_t end)
             }
             parser_stmt_return_parse(parser, stmt);
             vector_token_t_free(stmt);
-        } else 
+        } else
+        if (parser->toks->arr[parser->pos].type == TT_KW_IF) {
+            vector_token_t_t *expr = vector_token_t_create();
+            size_t rp_skip = 0;
+            parser->pos += 2;
+            while (parser->pos < parser->toks->size) {
+                if (parser->toks->arr[parser->pos].type == TT_LPARENT) {
+                    rp_skip++;
+                }
+                if (parser->toks->arr[parser->pos].type == TT_RPARENT) {
+                    if (!rp_skip) {
+                        break;
+                    }
+                    rp_skip--;
+                }
+                vector_token_t_push_back(expr, parser->toks->arr[parser->pos]);
+                parser->pos++;
+            }
+
+            parser->pos += 2;
+            size_t ns_start = parser->pos;
+            size_t rb_skip  = 0;
+            while (parser->pos < parser->toks->size) {
+                if (parser->toks->arr[parser->pos].type == TT_LBRACKET) {
+                    rb_skip++;
+                }
+                if (parser->toks->arr[parser->pos].type == TT_RBRACKET) {
+                    if (!rb_skip) {
+                        break;
+                    }
+                    rb_skip--;
+                }
+                parser->pos++;
+            }
+
+            parser_stmt_if_parse(parser, expr, ns_start, parser->pos);
+            vector_token_t_free(expr);
+        } else
         if (parser->toks->arr[parser->pos].type == TT_KW_ASM) {
             vector_token_t_t *stmt = vector_token_t_create();
             while (parser->toks->arr[parser->pos].type != TT_SEMICOLON) {

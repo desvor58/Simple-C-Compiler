@@ -108,6 +108,7 @@ typedef enum {
     TT_TYPE_NAME,
     TT_IDENT,
     TT_EQ,
+    TT_DOUBLE_EQ,
     TT_PLUS,
     TT_MINUS,
     TT_STAR,
@@ -125,7 +126,8 @@ typedef enum {
     TT_COMA,
     TT_SEMICOLON,
     TT_KW_RETURN,
-    TT_KW_ASM
+    TT_KW_IF,
+    TT_KW_ASM,
 } token_type;
 
 typedef struct {
@@ -164,6 +166,7 @@ typedef enum {
     NT_FUNCTION_CALL,
     NT_STMT_RETURN,
     NT_STMT_ASM,
+    NT_STMT_IF,
 } ast_node_type;
 
 typedef struct {

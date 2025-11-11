@@ -130,6 +130,7 @@ typedef struct {
 
 static op_info_t op_parse_stack[] = {
     {TT_EQ,        OT_BOP, parser_parse_bop},
+    {TT_DOUBLE_EQ, OT_BOP, parser_parse_bop},
     {TT_PLUS,      OT_BOP, parser_parse_bop},
     {TT_MINUS,     OT_BOP, parser_parse_bop},
     {TT_STAR,      OT_BOP, parser_parse_bop},
