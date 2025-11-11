@@ -1,7 +1,10 @@
 int main()
 {
-    int *a = 5;
-    int b = *a + 1;
+    int a = 5;
 
-    
+    if (a == 5) {
+        int b = 2;
+    } else {
+        int c = 1;
+    }
 }

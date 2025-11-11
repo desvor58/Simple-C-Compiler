@@ -35,6 +35,7 @@ void ast_print(ast_node_t *node, int tab)
 {
     char *str = "undef";
     if (node->type == NT_TRANSLATION_UNIT) str = "translation unit";
+    if (node->type == NT_BODY)             str = "body";
     if (node->type == NT_VARIABLE_DECL)    str = "var decl";
     if (node->type == NT_EXPR)             str = "expr";
     if (node->type == NT_INT_LIT)          str = "int lit";
@@ -46,7 +47,8 @@ void ast_print(ast_node_t *node, int tab)
     if (node->type == NT_FUNCTION_CALL)    str = "fun call";
     if (node->type == NT_STMT_RETURN)      str = "stmt return";
     if (node->type == NT_STMT_ASM)         str = "stmt asm";
-    if (node->type == NT_STMT_IF)         str = "stmt if";
+    if (node->type == NT_STMT_IF)          str = "stmt if";
+    if (node->type == NT_STMT_ELSE)        str = "stmt else";
 
     for (int i = 0; i < tab; i++) {
         putchar(' ');

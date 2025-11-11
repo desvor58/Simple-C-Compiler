@@ -197,6 +197,9 @@ void tokenizer_buf_analis(tokenizer_info_t *tokenizer)
     if (!strcmp(tokenizer->buf, "if")) {
         push_tok(TT_KW_IF, "if");
     } else
+    if (!strcmp(tokenizer->buf, "else")) {
+        push_tok(TT_KW_ELSE, "else");
+    } else
     if (!strcmp(tokenizer->buf, "asm")) {
         push_tok(TT_KW_ASM, "asm");
     } else {

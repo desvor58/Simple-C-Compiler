@@ -127,6 +127,7 @@ typedef enum {
     TT_SEMICOLON,
     TT_KW_RETURN,
     TT_KW_IF,
+    TT_KW_ELSE,
     TT_KW_ASM,
 } token_type;
 
@@ -154,6 +155,7 @@ token_t gen_token(token_type type, char *val, size_t line_ref, size_t chpos_ref,
 
 typedef enum {
     NT_TRANSLATION_UNIT,
+    NT_BODY,
     NT_FUNCTION_DECL,
     NT_VARIABLE_DECL,
     NT_EXPR,
@@ -167,6 +169,7 @@ typedef enum {
     NT_STMT_RETURN,
     NT_STMT_ASM,
     NT_STMT_IF,
+    NT_STMT_ELSE,
 } ast_node_type;
 
 typedef struct {

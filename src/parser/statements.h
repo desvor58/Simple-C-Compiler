@@ -36,6 +36,17 @@ void parser_stmt_asm_parse(parser_info_t *parser, vector_token_t_t *stmt)
     parser->cur_node = ast_acc;
 }
 
+void parser_stmt_else_parse(parser_info_t *parser, size_t ns_start, size_t ns_end)
+{
+    ast_node_t *ast_acc = parser->cur_node;
+    
+    parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_STMT_ELSE, (void*)0));
+
+    parser_namespace_parse(parser, ns_start, ns_end);
+
+    parser->cur_node = ast_acc;
+}
+
 void parser_stmt_if_parse(parser_info_t *parser, vector_token_t_t *expr, size_t ns_start, size_t ns_end)
 {
     ast_node_t *ast_acc = parser->cur_node;
@@ -48,8 +59,29 @@ void parser_stmt_if_parse(parser_info_t *parser, vector_token_t_t *expr, size_t 
     }
     parser_expr_parse(parser, expr);
     parser->cur_node = if_stmt_node;
-
+    parser->cur_node = ast_node_add_child(parser->cur_node, gen_ast_node(NT_BODY, (void*)0));
     parser_namespace_parse(parser, ns_start, ns_end);
+    parser->cur_node = if_stmt_node;
+
+    if (parser->toks->arr[parser->pos + 1].type == TT_KW_ELSE) {
+        parser->pos += 3;
+        size_t ens_start = parser->pos;
+        size_t rb_skip  = 0;
+        while (parser->pos < parser->toks->size) {
+            if (parser->toks->arr[parser->pos].type == TT_LBRACKET) {
+                rb_skip++;
+            }
+            if (parser->toks->arr[parser->pos].type == TT_RBRACKET) {
+                if (!rb_skip) {
+                    break;
+                }
+                rb_skip--;
+            }
+            parser->pos++;
+        }
+
+        parser_stmt_else_parse(parser, ens_start, parser->pos);
+    }
 
     parser->cur_node = ast_acc;
 }
