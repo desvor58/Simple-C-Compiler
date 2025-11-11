@@ -138,6 +138,7 @@ static op_info_t op_parse_stack[] = {
     {TT_PLUS,      OT_UOP, parser_parse_uop},
     {TT_MINUS,     OT_UOP, parser_parse_uop},
     {TT_AMPERSAND, OT_UOP, parser_parse_uop},
+    {TT_STAR,      OT_UOP, parser_parse_uop},
     {TT_LPARENT,   OT_BOP, parser_parse_bop}
 };
 

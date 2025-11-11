@@ -173,6 +173,22 @@ void codegen_x8086_expr_gen(codegen_x8086_info_t *codegen, ast_node_t *root, siz
                     reg);
     } else
     if (root->type == NT_UOP) {
+        char *reg = alloca(sizeof(char)*3);
+        codegen_x8086_get_reg(reg, 'a', expected_type);
+        if (!strcmp(root->info, "*")) {
+            if (root->childs->val->type != NT_IDENT) {
+                puts("codegen fatal error: expected ident after *");
+                exit(1);
+            }
+
+            putoutcode("mov di, [bp - %u]\n",
+                       hashmap_codegen_var_info_t_get(var_offsets, root->childs->val->info)->rbp_offset);
+            putoutcode("mov ax, [di]\n", 0);
+            putoutcode("mov %s [bp - %u], ax\n",
+                       codegen_x8086_get_asm_type(expected_type),
+                       dst_offset);
+            return;
+        }
         if (!strcmp(root->info, "&")) {
             if (root->childs->val->type != NT_IDENT) {
                 puts("codegen fatal error: expected ident after &");
