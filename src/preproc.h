@@ -57,11 +57,11 @@ void preprocess(preproc_info_t *preproc)
         macros_be_created = 1;
     }
 
-    string_insert(preproc->text, 0, "#file %s\n", preproc->file);
-    while (preproc->text->str[preproc->pos] != '\n' && preproc->text->str[preproc->pos] != '\0')  {
-        preproc->pos++;
-    }
-    preproc->pos++;
+    // string_insert(preproc->text, 0, "#file %s\n", preproc->file);
+    // while (preproc->text->str[preproc->pos] != '\n' && preproc->text->str[preproc->pos] != '\0')  {
+    //     preproc->pos++;
+    // }
+    // preproc->pos++;
 
     for (preproc->pos = 0; preproc->pos < preproc->text->size; preproc->pos++) {
         if (preproc->text->str[preproc->pos] == '\n') {
@@ -91,7 +91,9 @@ void preprocess(preproc_info_t *preproc)
             preproc->pos = start_pos;
         } else
         if (preproc->text->str[preproc->pos] == '"') {
+            put_pos_str(preproc->text->str, preproc->pos);
             while (preproc->text->str[++preproc->pos] != '"') {}
+            put_pos_str(preproc->text->str, preproc->pos);
         }
         if (preproc->text->str[preproc->pos] == '#') {
             u32 start_pos = preproc->pos;

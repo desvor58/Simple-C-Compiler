@@ -22,11 +22,12 @@ typedef          float  f32;
 typedef          double f64;
 
 
-#define ARGS_FLG_ASM_STOP     1
-#define ARGS_FLG_PREPROC_STOP 2
-#define ARGS_FLG_TOKS_PUT     4
-#define ARGS_FLG_AST_PUT      8
-#define ARGS_FLG_OBJ_STOP     16
+#define ARGS_FLG_ASM_STOP       1
+#define ARGS_FLG_PREPROC_STOP   2
+#define ARGS_FLG_TOKS_PUT       4
+#define ARGS_FLG_AST_PUT        8
+#define ARGS_FLG_OBJ_STOP       16
+#define ARGS_FLG_INPUT_TEXT_PUT 32
 
 typedef enum {
     TRGT_x8664_WIN,

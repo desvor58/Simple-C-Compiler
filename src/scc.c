@@ -90,7 +90,9 @@ int main(int argc, char **argv)
         put_error(gen_error("input file not be opened", "", 0, 0), 1);
     }
     get_file_text(infile, code);
-    //printf_s("%s\nEND\n", code->str);
+    if (args.flags & ARGS_FLG_INPUT_TEXT_PUT) {
+        printf_s("%s\nEND\n", code->str);
+    }
     fclose(infile);
 
     /* --- preprocess --- */

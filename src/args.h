@@ -60,6 +60,9 @@ error_t args_parse(args_t *args, int argc, char **argv)
             if (argv[cur_arg][1] == 'S') {
                 args->flags |= ARGS_FLG_ASM_STOP;
             } else
+            if (argv[cur_arg][1] == 'Y') {
+                args->flags |= ARGS_FLG_INPUT_TEXT_PUT;
+            } else
             if (argv[cur_arg][1] == 'E') {
                 args->flags |= ARGS_FLG_PREPROC_STOP;
             } else

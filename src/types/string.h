@@ -34,7 +34,7 @@ void __string_realoc(string_t *str)
 
 void string_push_back(string_t *str, char val)
 {
-    if (str->size + 1 > str->aloc_size) {
+    if (str->size + 1 >= str->aloc_size) {
         __string_realoc(str);
     }
     str->str[str->size++] = val;
@@ -48,7 +48,7 @@ void string_cat(string_t *str, char *fmt, ...)
     vsnprintf(buf, 4*1024, fmt, args);
     va_end(args);
 
-    char *new_str = malloc(sizeof(char) * (str->aloc_size + ((strlen(buf) + 1) / 512 + 1)*512));
+    char *new_str = malloc(sizeof(char) * (str->size + (str->aloc_size += ((strlen(buf) + 1) / 512 + 1)*512)));
     size_t i = 0;
     while (i < str->size) {
         new_str[i] = str->str[i]; 
@@ -61,9 +61,7 @@ void string_cat(string_t *str, char *fmt, ...)
         i++;
         j++;
     }
-    puts("0");
     free(str->str);
-    puts("1");
     str->str = new_str;
     free(buf);
 }
@@ -76,7 +74,7 @@ void string_insert(string_t *str, size_t index, char *fmt, ...)
     vsnprintf(buf, 4*1024, fmt, args);
     va_end(args);
 
-    char *new_str = malloc(sizeof(char) * (str->aloc_size + ((strlen(buf) + 1) / 512 + 1)*512));
+    char *new_str = malloc(sizeof(char) * (str->aloc_size += ((strlen(buf) + 1) / 512 + 1)*512));
     size_t i = 0;
     while (i < index) {
         new_str[i] = str->str[i]; 
@@ -109,7 +107,7 @@ void string_replace(string_t *str, size_t start, size_t end, char *fmt, ...)
     va_end(args);
     size_t size_acc = str->size;
 
-    char *new_str = malloc(sizeof(char) * (str->aloc_size + ((strlen(buf) + 1) / 512 + 1)*512));
+    char *new_str = malloc(sizeof(char) * (str->aloc_size += ((strlen(buf) + 1) / 512 + 1)*512));
     str->size = 0;
     size_t i = 0;
     while (i < start) {

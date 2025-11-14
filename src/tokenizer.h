@@ -44,6 +44,7 @@ void tokenizer_buf_analis(tokenizer_info_t *tokenizer);
 void tokenize_text(tokenizer_info_t *tokenizer)
 {
     for (tokenizer->pos = 0; tokenizer->pos < strlen(tokenizer->text); tokenizer->pos++) {
+        printf_s("%c", tokenizer->text[tokenizer->pos]);
         if (tokenizer->text[tokenizer->pos] == '\n') {
             tokenizer->line++;
             tokenizer->chpos = 1;
