@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     }
     get_file_text(infile, code);
     if (args.flags & ARGS_FLG_INPUT_TEXT_PUT) {
-        printf_s("%s\nEND\n", code->str);
+        printf_s("%s\n", code->str);
     }
     fclose(infile);
 
