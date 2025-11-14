@@ -106,7 +106,9 @@ void codegen_x8086_stmt_if_gen(codegen_x8086_info_t *codegen)
 
 void codegen_x8086_stmt_asm_gen(codegen_x8086_info_t *codegen)
 {
+    //printf_s("put this:\n");
     foreach (list_ast_node_t_pair_t, codegen->cur_node->childs) {
+        //printf_s("    %s\n", cur->val->info);
         putoutcode("%s\n", cur->val->info);
     }
 }

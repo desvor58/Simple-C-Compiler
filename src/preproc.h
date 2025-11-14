@@ -78,6 +78,21 @@ void preprocess(preproc_info_t *preproc)
             string_replace(preproc->text, start_pos, preproc->pos, "");
             preproc->pos = start_pos;
         } else
+        if (preproc->text->str[preproc->pos] == '/' && preproc->text->str[preproc->pos + 1] == '*') {
+            size_t start_pos = preproc->pos;
+            preproc->pos = 2;
+            for (;;preproc->pos++) {
+                if (preproc->text->str[preproc->pos] == '*' && preproc->text->str[preproc->pos + 1] == '/') {
+                    preproc->pos += 2;
+                    break;
+                }
+            }
+            string_replace(preproc->text, start_pos, preproc->pos, "");
+            preproc->pos = start_pos;
+        } else
+        if (preproc->text->str[preproc->pos] == '"') {
+            while (preproc->text->str[++preproc->pos] != '"') {}
+        }
         if (preproc->text->str[preproc->pos] == '#') {
             u32 start_pos = preproc->pos;
             preproc_gettok(preproc);

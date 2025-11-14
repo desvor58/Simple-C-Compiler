@@ -61,7 +61,9 @@ void string_cat(string_t *str, char *fmt, ...)
         i++;
         j++;
     }
+    puts("0");
     free(str->str);
+    puts("1");
     str->str = new_str;
     free(buf);
 }

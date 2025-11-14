@@ -1,3 +1,5 @@
+#include "code/dev_test.h"
+
 int main()
 {
     int a = 5;

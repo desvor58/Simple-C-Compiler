@@ -1,3 +1,5 @@
+/* hidnadbs */
+
 #ifndef ABC
 #define ABC
 

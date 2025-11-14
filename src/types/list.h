@@ -106,6 +106,7 @@ int list_##Ty##_free(list_##Ty##_pair_t *start)  \
     }  \
     list_##Ty##_free(start->next);  \
     free(start);  \
+    return 0;  \
 }  \
 
 #endif
