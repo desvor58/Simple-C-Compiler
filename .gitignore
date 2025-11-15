@@ -4,7 +4,11 @@ bin
 *.exe
 *.obj
 goyda
-a.s
-!tools/test.py
+a.*
 test_tmp.txt
 !prclib
+!tools
+!tests
+dev_test.*
+tests/log/
+tests/bin/
