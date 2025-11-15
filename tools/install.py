@@ -3,7 +3,7 @@ import sys
 from config import *
 
 if not os.path.isdir(BUILD_DST) or not os.path.isfile(BUILD_DST + "scc.exe"):
-    print("\033[38;2;256;0;0mError: scc not compiled, please build it:")
+    print("\033[33mError: scc not compiled, please build it:")
     print("    python tools/build.py\033[00m")
     exit(1)
 
@@ -20,4 +20,4 @@ if sys.platform == "win32":
     winreg.CloseKey(key)
     winreg.CloseKey(root_key)
 
-print("\033[38;2;256;0;0mInstallation finish successfully\033[00m")
+print("\033[32mInstallation finish successfully\033[00m")

@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.sf": "sf",
         "xutility": "cpp",
         "xiosbase": "c",
         "test_preproc.h": "c",
@@ -43,6 +44,8 @@
         "x8664_win.h": "c",
         "stdio.h": "c",
         "codegen_common.h": "c",
-        "dev_test.h": "c"
+        "dev_test.h": "c",
+        "list.h": "c",
+        "test_template.h": "c"
     }
 }

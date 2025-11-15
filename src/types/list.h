@@ -1,6 +1,8 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <malloc.h>
+
 #define foreach(Ty, list) for (Ty *cur = list; cur && cur->val; cur = cur->next)
 
 #define genlist(Ty)  \

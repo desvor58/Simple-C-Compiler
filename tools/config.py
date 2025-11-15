@@ -3,4 +3,7 @@ BUILD_COMPILER_FLAGS = "-Iinclude"  # options for compiler, witch compile scc
 BUILD_DST            = "./bin/"  # where to build scc
 
 TESTS_DIR        = "./tests"
-TEST_FORMAT_TAB = 8*' '
+TEST_FORMAT_TAB  = 8*' '
+TEST_ALL_MODULES = [
+    "common"
+]
