@@ -2,6 +2,7 @@ import os
 import sys
 import threading
 import subprocess
+import random
 from config import *
 
 def build_test(test_path: str):
@@ -41,9 +42,16 @@ def test(module: str) -> int:
             print(f"\b\b\b\033[31merr ({process.returncode})\033[00m")
             total_errs += 1
 
+    for path in os.listdir(f"{TESTS_DIR}/bin"):
+        os.remove(f"{TESTS_DIR}/bin/{path}")
+
     return total_errs
     
-if (__name__ == "__main__"):
+if __name__ == "__main__":
+    offset = 1
+    if sys.argv[offset] == "-build":
+        import build
+        offset += 1
     if not os.path.isdir(BUILD_DST) or not os.path.isfile(BUILD_DST + "scc.exe"):
         print("\033[31mError: scc not compiled, please build it:")
         print("    python tools/build.py\033[00m")
@@ -51,10 +59,10 @@ if (__name__ == "__main__"):
     
     total_errs = 0
     modules = []
-    if sys.argv[1] == "all":
+    if sys.argv[offset] == "all":
         modules = TEST_ALL_MODULES
     else:
-        modules = sys.argv[1:]
+        modules = sys.argv[offset:]
 
     for module in modules:
         total_errs += test(module)

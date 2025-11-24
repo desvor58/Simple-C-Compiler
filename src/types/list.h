@@ -110,5 +110,17 @@ int list_##Ty##_free(list_##Ty##_pair_t *start)  \
     free(start);  \
     return 0;  \
 }  \
+int list_##Ty##_full_free(list_##Ty##_pair_t *start)  \
+{  \
+    if (start == (list_##Ty##_pair_t*)0) {  \
+        return 1;  \
+    }  \
+    foreach (list_##Ty##_pair_t, start) {  \
+        free(cur->val);  \
+    }  \
+    list_##Ty##_free(start->next);  \
+    free(start);  \
+    return 0;  \
+}
 
 #endif

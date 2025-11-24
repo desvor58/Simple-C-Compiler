@@ -58,12 +58,13 @@ void preprocess(preproc_info_t *preproc)
     }
 
     // string_insert(preproc->text, 0, "#file %s\n", preproc->file);
-    // while (preproc->text->str[preproc->pos] != '\n' && preproc->text->str[preproc->pos] != '\0')  {
+    // while (preproc->text->str[preproc->pos] != '\n' && preproc->pos < preproc->text->size)  {
     //     preproc->pos++;
     // }
     // preproc->pos++;
 
     for (preproc->pos = 0; preproc->pos < preproc->text->size; preproc->pos++) {
+        printf_s("^%c$\n", preproc->text->str[preproc->pos]);
         if (preproc->text->str[preproc->pos] == '\n') {
             preproc->line++;
             preproc->chpos = 1;
@@ -72,7 +73,7 @@ void preprocess(preproc_info_t *preproc)
         }
         if (preproc->text->str[preproc->pos] == '/' && preproc->text->str[preproc->pos + 1] == '/') {
             size_t start_pos = preproc->pos;
-            while (preproc->text->str[preproc->pos] != '\n' && preproc->text->str[preproc->pos] != '\0') {
+            while (preproc->text->str[preproc->pos] != '\n' && preproc->pos < preproc->text->size) {
                 preproc->pos++;
             }
             string_replace(preproc->text, start_pos, preproc->pos, "");
@@ -128,7 +129,9 @@ void preprocess(preproc_info_t *preproc)
             size_t start_pos = preproc->pos;
             preproc_gettok(preproc);
 
+            puts("h");
             macro_info_t *macro = hashmap_macro_info_t_get(macros, preproc->buf->str);
+            puts("g");
             if (macro) {
                 string_replace(preproc->text, start_pos, preproc->pos, macro->val);
                 preproc->pos = start_pos;
@@ -199,7 +202,7 @@ void preproc_derective_include(preproc_info_t *preproc, size_t start_pos)
         preproc->pos = start_pos + included_code->size;
 
         string_insert(preproc->text, preproc->pos, "#file %s\n", preproc->file);
-        while (preproc->text->str[preproc->pos] != '\n' && preproc->text->str[preproc->pos] != '\0')  {
+        while (preproc->text->str[preproc->pos] != '\n' && preproc->pos < preproc->text->size)  {
             preproc->pos++;
         }
 
@@ -219,7 +222,7 @@ void preproc_derective_define(preproc_info_t *preproc, size_t start_pos)
     preproc->pos--;
     preproc->buf->size = 0;
     size_t i = 0;
-    while (preproc->text->str[preproc->pos] != '\n' && preproc->text->str[preproc->pos] != '\0') {
+    while (preproc->text->str[preproc->pos] != '\n' && preproc->pos < preproc->text->size) {
         string_push_back(preproc->buf, preproc->text->str[preproc->pos++]);
     }
     string_push_back(preproc->buf, '\0');
@@ -247,31 +250,6 @@ void preproc_derective_undef(preproc_info_t *preproc, size_t start_pos)
     preproc->pos = start_pos;
 }
 
-void preproc_skip_notoks(preproc_info_t *preproc)
-{
-    while (!isalpha(preproc->text->str[preproc->pos])
-        && preproc->text->str[preproc->pos] != '_'
-        && preproc->text->str[preproc->pos] != '#') {
-        preproc->pos++;
-    }
-}
-
-void preproc_gettok(preproc_info_t *preproc)
-{
-    int i = 0;
-    preproc->buf->size = 0;
-    while (isalpha(preproc->text->str[preproc->pos])
-        || isdigit(preproc->text->str[preproc->pos])
-        || preproc->text->str[preproc->pos] == '_'
-        || preproc->text->str[preproc->pos] == '#'
-    ) {
-        string_push_back(preproc->buf, preproc->text->str[preproc->pos]);
-        i++;
-        preproc->pos++;
-    }
-    string_push_back(preproc->buf, '\0');
-}
-
 void preproc_derective_ifndef(preproc_info_t *preproc, size_t start_pos)
 {
     preproc_skip_notoks(preproc);
@@ -287,13 +265,37 @@ void preproc_derective_ifndef(preproc_info_t *preproc, size_t start_pos)
         if (preproc->text->str[preproc->pos++] != '#') {
             preproc_gettok(preproc);
             if (!strcmp(preproc->buf->str, "#endif")) {
-                while (preproc->text->str[preproc->pos++] != '\n') {}
+                while (preproc->text->str[preproc->pos++] != '\n' || preproc->text->str[preproc->pos++] != '\0') {}
                 string_replace(preproc->text, start_pos, preproc->pos, "");
                 preproc->pos = start_pos;
                 return;
             }
         }
     }
+}
+
+void preproc_skip_notoks(preproc_info_t *preproc)
+{
+    while (!isalpha(preproc->text->str[preproc->pos])
+        && preproc->text->str[preproc->pos] != '_'
+        && preproc->text->str[preproc->pos] != '#') {
+        preproc->pos++;
+    }
+}
+
+void preproc_gettok(preproc_info_t *preproc)
+{
+    string_free(preproc->buf);
+    preproc->buf = string_create("");
+    while (isalpha(preproc->text->str[preproc->pos])
+        || isdigit(preproc->text->str[preproc->pos])
+        || preproc->text->str[preproc->pos] == '_'
+        || preproc->text->str[preproc->pos] == '#'
+    ) {
+        string_push_back(preproc->buf, preproc->text->str[preproc->pos]);
+        preproc->pos++;
+    }
+    string_push_back(preproc->buf, '\0');
 }
 
 #endif

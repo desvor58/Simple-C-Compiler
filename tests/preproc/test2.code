@@ -1,0 +1,6 @@
+#define ABC 5
+#define FOO int
+#define N   name
+
+FOO var = ABC;
+FOO N = ABC;

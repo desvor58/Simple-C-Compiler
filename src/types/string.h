@@ -24,7 +24,7 @@ string_t *string_create(char *init_val)
 
 void __string_realoc(string_t *str)
 {
-    char *new_str = malloc(sizeof(char) * (str->aloc_size + 512));
+    char *new_str = malloc(sizeof(char) * (str->aloc_size += 512));
     for (size_t i = 0; i < str->size; i++) {
         new_str[i] = str->str[i]; 
     }
@@ -34,10 +34,11 @@ void __string_realoc(string_t *str)
 
 void string_push_back(string_t *str, char val)
 {
-    if (str->size + 1 >= str->aloc_size) {
+    if (str->size + 2 >= str->aloc_size) {
         __string_realoc(str);
     }
     str->str[str->size++] = val;
+    str->str[str->size]   = '\0';
 }
 
 void string_cat(string_t *str, char *fmt, ...)
