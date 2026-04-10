@@ -17,7 +17,7 @@
 
     foo:
         push bp
-        mob bp, sp
+        mov bp, sp
             mov ax, [bp - 2]  ; int a
             mov bx, [bp - 4]  ; int b
             mov cx, [bp - 6]  ; char c
